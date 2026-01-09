@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Painel Admin - Cariominas FC</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: { "primary": "#ec131e", "bg-dark": "#120a0a", "surface": "#1f1414" },
+                    fontFamily: { "display": ["Lexend", "sans-serif"] }
+                },
+            },
+        }
+    </script>
+    <style>
+        body { background: #120a0a; color: white; font-family: 'Lexend', sans-serif; }
+        input, select, textarea { 
+            background: #2a1b1b !important; 
+            border: 1px solid rgba(255,255,255,0.05) !important; 
+            color: white !important;
+        }
+    </style>
+</head>
+<body class="p-6 md:p-12 max-w-4xl mx-auto space-y-12 pb-24">
+
+    <div id="admin-auth" class="fixed inset-0 z-50 bg-bg-dark flex items-center justify-center p-6">
+        <div class="max-w-sm w-full space-y-8 text-center">
+            <h1 class="text-3xl font-bold">Admin Cariominas</h1>
+            <form id="admin-login-form" class="space-y-4">
+                <input type="email" id="admin-email" class="w-full p-4 rounded-xl" placeholder="E-mail Admin" required>
+                <input type="password" id="admin-pass" class="w-full p-4 rounded-xl" placeholder="Senha" required>
+                <button type="submit" class="w-full bg-primary py-4 rounded-xl font-bold">Acessar Painel</button>
+            </form>
+        </div>
+    </div>
+
+    <header class="flex justify-between items-end border-b border-white/10 pb-6">
+        <div>
+            <h1 class="text-3xl font-bold">Controle Administrativo</h1>
+            <p class="text-white/40">Gerencie o conteúdo do clube</p>
+        </div>
+        <button onclick="auth.signOut()" class="text-xs text-red-500 font-bold uppercase">Sair do Painel</button>
+    </header>
+
+    <div class="grid md:grid-cols-2 gap-8">
+        <section class="bg-surface p-6 rounded-3xl border border-white/5 space-y-6">
+            <h2 class="text-xl font-bold text-primary">Nova Notícia</h2>
+            <form id="newsForm" class="space-y-4">
+                <input type="text" id="newsTitle" placeholder="Título da Notícia" class="w-full rounded-xl" required>
+                <input type="url" id="newsImage" placeholder="URL da Capa" class="w-full rounded-xl" required>
+                <button type="submit" class="w-full bg-primary py-3 rounded-xl font-bold">Publicar</button>
+            </form>
+        </section>
+
+        <section class="bg-surface p-6 rounded-3xl border border-white/5 space-y-6">
+            <h2 class="text-xl font-bold text-primary">Nova Atividade</h2>
+            <form id="eventForm" class="space-y-4">
+                <input type="text" id="eventTitle" placeholder="Ex: Treino de Finalização" class="w-full rounded-xl" required>
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="date" id="eventDate" class="rounded-xl" required>
+                    <input type="time" id="eventTime" class="rounded-xl" required>
+                </div>
+                <input type="text" id="eventLocation" placeholder="Local" class="w-full rounded-xl" required>
+                <button type="submit" class="w-full bg-primary py-3 rounded-xl font-bold">Agendar</button>
+            </form>
+        </section>
+    </div>
+
+    <section class="bg-surface p-8 rounded-3xl border border-white/5 space-y-6">
+        <h2 class="text-xl font-bold text-primary">Gerenciar Ficha do Atleta</h2>
+        <form id="profileUpdateForm" class="grid md:grid-cols-3 gap-4">
+            <input type="text" id="pId" placeholder="Cole o UID do Atleta aqui" class="md:col-span-3 rounded-xl" required>
+            <input type="number" id="pOvr" placeholder="Overall (0-99)" class="rounded-xl">
+            <input type="number" id="pVel" placeholder="Velocidade" class="rounded-xl">
+            <input type="number" id="pPas" placeholder="Passe" class="rounded-xl">
+            <input type="number" id="pDri" placeholder="Drible" class="rounded-xl">
+            <button type="submit" class="md:col-span-3 bg-white text-black py-3 rounded-xl font-bold">Atualizar Card</button>
+        </form>
+    </section>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const configReal = {
+            apiKey: "AIzaSyBAyhAtApmZ9oYi6fu_cX_H25WYXk513HI",
+            authDomain: "cariominasapp.firebaseapp.com",
+            projectId: "cariominasapp",
+            storageBucket: "cariominasapp.firebasestorage.app",
+            messagingSenderId: "337748582700",
+            appId: "1:337748582700:web:8fa4c9ee92b6d02c374c89",
+            measurementId: "G-T5KEEF8YT4"
+        };
+
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : configReal;
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'cariominasapp';
+
+        onAuthStateChanged(auth, (u) => {
+            document.getElementById('admin-auth').style.display = u ? 'none' : 'flex';
+        });
+
+        document.getElementById('admin-login-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('admin-email').value;
+            const pass = document.getElementById('admin-pass').value;
+            try { await signInWithEmailAndPassword(auth, email, pass); } catch (err) { alert("Acesso negado."); }
+        };
+
+        document.getElementById('newsForm').onsubmit = async (e) => {
+            e.preventDefault();
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'news'), {
+                    titulo: document.getElementById('newsTitle').value,
+                    capa: document.getElementById('newsImage').value,
+                    date: new Date().toISOString(),
+                    dataPostagem: new Date().toLocaleDateString('pt-BR')
+                });
+                alert('Notícia publicada!'); e.target.reset();
+            } catch (err) { alert("Erro ao postar notícia: " + err.message); }
+        };
+
+        document.getElementById('eventForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const dateVal = document.getElementById('eventDate').value;
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'events'), {
+                    titulo: document.getElementById('eventTitle').value,
+                    date: dateVal,
+                    hora: document.getElementById('eventTime').value,
+                    local: document.getElementById('eventLocation').value,
+                    dataExtenso: new Date(dateVal + 'T12:00:00').toLocaleDateString('pt-BR', { day:'2-digit', month:'short' })
+                });
+                alert('Evento agendado!'); e.target.reset();
+            } catch (err) { alert("Erro ao agendar: " + err.message); }
+        };
+
+        document.getElementById('profileUpdateForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const uid = document.getElementById('pId').value;
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'users', uid, 'settings', 'profile'), {
+                    overall: document.getElementById('pOvr').value,
+                    vel: document.getElementById('pVel').value,
+                    pas: document.getElementById('pPas').value,
+                    dri: document.getElementById('pDri').value
+                }, { merge: true });
+                alert('Ficha atualizada!'); e.target.reset();
+            } catch (err) { alert("Erro ao atualizar card."); }
+        };
+
+        window.auth = auth;
+    </script>
+</body>
+</html>
