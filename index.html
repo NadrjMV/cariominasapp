@@ -34,7 +34,8 @@
                     backgroundImage: {
                         'card-gradient': 'linear-gradient(135deg, #2a1e1e 0%, #1a0f0f 100%)',
                         'card-shine': 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.05) 45%, rgba(255,255,255,0.02) 55%, transparent 60%)',
-                        'pitch': 'radial-gradient(circle at 50% 50%, #2e5c33 0%, #1a3c20 100%)'
+                        'pitch': 'radial-gradient(circle at 50% 50%, #2e5c33 0%, #1a3c20 100%)',
+                        'stadium': 'url("https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=2076&auto=format&fit=crop")'
                     }
                 },
             },
@@ -64,7 +65,7 @@
         }
 
         .loader-screen {
-            position: fixed; inset: 0; background: #181111; z-index: 100;
+            position: fixed; inset: 0; background: #181111; z-index: 1000;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             transition: opacity 0.4s ease;
         }
@@ -95,7 +96,7 @@
     <div id="app" class="relative min-h-screen w-full flex flex-col max-w-md mx-auto bg-bg-dark shadow-2xl overflow-hidden">
         <main id="main-view" class="flex-1 overflow-y-auto no-scrollbar"></main>
 
-        <nav id="navbar" class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-[400px] z-50 glass-panel rounded-full px-2 py-3 shadow-2xl hidden items-center justify-around">
+        <nav id="navbar" class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-[400px] z-[100] glass-panel rounded-full px-2 py-3 shadow-2xl hidden items-center justify-around">
             <button onclick="router.go('home')" class="nav-item flex flex-col items-center gap-1 px-3 text-white/40" data-view="home">
                 <span class="material-symbols-outlined">home</span>
             </button>
@@ -119,7 +120,7 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, getDocs, collection, setDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Configuração real do Firebase
+        // Configuração do Firebase
         const configReal = {
             apiKey: "AIzaSyBAyhAtApmZ9oYi6fu_cX_H25WYXk513HI",
             authDomain: "cariominasapp.firebaseapp.com",
@@ -130,7 +131,6 @@
             measurementId: "G-T5KEEF8YT4"
         };
 
-        // Usa as variáveis do Canvas ou a configReal
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : configReal;
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -139,7 +139,6 @@
 
         let profileData = null;
 
-        // Router para navegação entre as views
         const router = {
             current: 'home',
             async go(view) {
@@ -166,19 +165,18 @@
                     if (view === 'login') setupLoginEvents();
                     if (view === 'setupProfile') setupProfileEvents();
                 } catch (err) {
-                    console.error("Erro na renderização:", err);
+                    console.error("Erro render:", err);
                     container.innerHTML = `<div class="p-12 text-center text-red-500/40 text-sm">Erro ao carregar vista.</div>`;
                 }
             }
         };
         window.router = router;
 
-        // Função de upload com compressão via Canvas (Base64)
         window.handlePhotoUpload = async (event) => {
             const file = event.target.files[0];
             if (!file) return;
 
-            const profileCircle = event.target.closest('.relative').querySelector('.relative.bg-cover');
+            const profileCircle = document.querySelector('.profile-avatar-main');
             if (profileCircle) profileCircle.style.opacity = '0.5';
 
             const reader = new FileReader();
@@ -186,7 +184,7 @@
                 const img = new Image();
                 img.onload = async () => {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 400; // Reduz o tamanho da imagem para caber no Firestore
+                    const MAX_WIDTH = 400; 
                     const scaleSize = MAX_WIDTH / img.width;
                     canvas.width = MAX_WIDTH;
                     canvas.height = img.height * scaleSize;
@@ -194,7 +192,6 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-                    // Exporta como JPEG 70% para ser bem leve
                     const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
 
                     try {
@@ -203,10 +200,9 @@
                         
                         if (profileData) profileData.foto = compressedBase64;
                         router.go('perfil'); 
-                        alert('Foto atualizada com sucesso!');
                     } catch (err) {
                         console.error(err);
-                        alert('Erro ao guardar a foto no banco de dados.');
+                        alert('Erro ao salvar no banco.');
                     }
                 };
                 img.src = e.target.result;
@@ -236,8 +232,8 @@
             setupProfile: async () => `
                 <div class="p-8 pt-12 pb-20 animate-in">
                     <header class="mb-8">
-                        <h1 class="text-2xl font-bold tracking-tight">Crie sua Ficha Técnica</h1>
-                        <p class="text-white/40 text-sm">Esses dados aparecerão no seu FIFA Card.</p>
+                        <h1 class="text-2xl font-bold tracking-tight text-white">Ficha Técnica</h1>
+                        <p class="text-white/40 text-sm">Dados reais para o seu card.</p>
                     </header>
                     
                     <form id="profile-setup-form" class="space-y-6">
@@ -254,15 +250,15 @@
                         </div>
 
                         <div class="space-y-4">
-                            <input type="text" id="setup-name" class="w-full p-4" placeholder="Nome de Atleta (ex: Léo Santos)" required>
+                            <input type="text" id="setup-name" class="w-full p-4" placeholder="Nome de Atleta" required>
                             <div class="grid grid-cols-2 gap-4">
                                 <select id="setup-pos" class="w-full p-4 h-[58px]" required>
                                     <option value="">Posição</option>
-                                    <option value="Goleiro">Goleiro</option>
-                                    <option value="Zagueiro">Zagueiro</option>
-                                    <option value="Volante">Volante</option>
-                                    <option value="Meia">Meia</option>
-                                    <option value="Atacante">Atacante</option>
+                                    <option value="GOL">Goleiro</option>
+                                    <option value="ZAG">Zagueiro</option>
+                                    <option value="VOL">Volante</option>
+                                    <option value="MEI">Meia</option>
+                                    <option value="ATA">Atacante</option>
                                 </select>
                                 <select id="setup-foot" class="w-full p-4 h-[58px]" required>
                                     <option value="">Pé Dominante</option>
@@ -282,7 +278,7 @@
                                 <option value="Profissional">Profissional</option>
                             </select>
                         </div>
-                        <button type="submit" class="w-full bg-primary py-4 rounded-2xl font-bold shadow-lg shadow-primary/20 mt-4">Guardar Perfil</button>
+                        <button type="submit" class="w-full bg-primary py-4 rounded-2xl font-bold shadow-lg shadow-primary/20 mt-4">Salvar Perfil</button>
                     </form>
                 </div>
             `,
@@ -307,7 +303,6 @@
                         <button class="size-10 rounded-full glass-panel flex items-center justify-center"><span class="material-symbols-outlined">notifications</span></button>
                     </header>
 
-                    <!-- Banner de Próxima Atividade -->
                     <section class="relative p-6 rounded-[2.5rem] overflow-hidden glass-panel group border border-white/5">
                         <div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent"></div>
                         <div class="relative z-10 space-y-5">
@@ -322,7 +317,6 @@
                         </div>
                     </section>
 
-                    <!-- Cartões de Ações Rápidas -->
                     <section class="grid grid-cols-2 gap-4">
                         <button onclick="router.go('card')" class="flex flex-col items-center justify-center gap-3 rounded-[2.5rem] bg-surface p-6 transition-all active:scale-95 border border-white/5 shadow-lg">
                             <div class="size-14 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
@@ -353,7 +347,6 @@
                         </button>
                     </section>
 
-                    <!-- Mural -->
                     <section class="space-y-4">
                         <h3 class="text-lg font-bold px-1">Mural do Clube</h3>
                         <div class="space-y-4">
@@ -375,60 +368,178 @@
             
             agenda: async () => {
                 const events = await getPublicData('events');
-                return `<div class="p-6 pt-8 space-y-6 animate-in pb-32">
-                    <h1 class="text-3xl font-black italic uppercase">Calendário</h1>
-                    <div class="space-y-4">
-                        ${events.length ? events.map(ev => `
-                            <div class="flex gap-5 items-start">
-                                <div class="flex flex-col items-center min-w-[50px] pt-1">
-                                    <span class="text-[10px] font-black uppercase text-primary">${ev.dateFormatted ? ev.dateFormatted.split(' ')[1] : ''}</span>
-                                    <span class="text-2xl font-black">${ev.dateFormatted ? ev.dateFormatted.split(' ')[0] : ev.date}</span>
-                                </div>
-                                <div class="flex-1 p-6 rounded-[2rem] glass-panel border border-white/5 space-y-2 shadow-2xl">
-                                    <h3 class="font-bold text-white/90 text-sm leading-tight">${ev.title || ev.titulo}</h3>
-                                    <div class="flex items-center justify-between text-xs pt-1">
-                                        <p class="text-white/40">${ev.location || ev.local}</p>
-                                        <p class="font-black text-primary">${ev.time || ev.hora}</p>
+                return `
+                <div class="p-6 pt-12 space-y-8 animate-in pb-32">
+                    <header class="flex justify-between items-end">
+                        <h1 class="text-4xl font-black italic uppercase leading-none">Calendário</h1>
+                        <span class="text-primary text-[10px] font-bold uppercase tracking-[0.2em] mb-1">Próximos</span>
+                    </header>
+
+                    <div class="relative space-y-6 before:absolute before:left-[35px] before:top-2 before:bottom-0 before:w-px before:bg-white/5">
+                        ${events.length ? events.map(ev => {
+                            const isGame = ev.type?.toLowerCase() === 'jogo' || ev.titulo?.toLowerCase().includes('jogo');
+                            const accentColor = isGame ? 'text-accent-gold' : 'text-primary';
+                            const bgColor = isGame ? 'bg-accent-gold/10' : 'bg-primary/10';
+                            const borderColor = isGame ? 'border-accent-gold/20' : 'border-primary/20';
+
+                            return `
+                            <div class="relative flex gap-6 group">
+                                <div class="flex flex-col items-center min-w-[70px] z-10">
+                                    <div class="size-12 rounded-2xl bg-surface border border-white/10 flex flex-col items-center justify-center shadow-xl group-hover:border-primary/40 transition-colors">
+                                        <span class="text-[9px] font-black uppercase text-white/30 leading-none mb-1">${ev.dateFormatted ? ev.dateFormatted.split(' ')[1] : ''}</span>
+                                        <span class="text-xl font-black text-white leading-none">${ev.dateFormatted ? ev.dateFormatted.split(' ')[0] : ev.date.split('-')[2]}</span>
                                     </div>
                                 </div>
-                            </div>
-                        `).join('') : `<div class="p-20 text-center text-white/20 text-sm italic">Sem eventos agendados.</div>`}
+
+                                <div class="flex-1 p-6 rounded-[2.5rem] glass-panel border border-white/5 space-y-4 shadow-2xl relative overflow-hidden transition-all active:scale-[0.98]">
+                                    <div class="absolute top-0 right-0 w-24 h-24 ${bgColor} rounded-full -mr-12 -mt-12 blur-2xl"></div>
+                                    <div class="relative space-y-2">
+                                        <div class="flex justify-between items-start">
+                                            <span class="${accentColor} text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border ${borderColor} ${bgColor}">${ev.type || (isGame ? 'Jogo' : 'Treino')}</span>
+                                            <span class="text-white/30 material-symbols-outlined text-lg">more_vert</span>
+                                        </div>
+                                        <h3 class="font-bold text-white text-lg leading-tight">${ev.title || ev.titulo}</h3>
+                                    </div>
+                                    <div class="relative flex flex-col gap-2 pt-2 border-t border-white/5">
+                                        <div class="flex items-center gap-2 text-white/50">
+                                            <span class="material-symbols-outlined text-sm ${accentColor}">location_on</span>
+                                            <span class="text-[11px] font-medium truncate">${ev.location || ev.local}</span>
+                                        </div>
+                                        <div class="flex items-center gap-2 text-white/50">
+                                            <span class="material-symbols-outlined text-sm ${accentColor}">schedule</span>
+                                            <span class="text-[11px] font-medium">${ev.time || ev.hora}</span>
+                                        </div>
+                                    </div>
+                                    <div class="relative pt-2">
+                                        <button class="w-full py-3 rounded-2xl bg-white/5 text-[10px] font-black uppercase tracking-widest text-white/60 hover:bg-white/10 transition-all">Confirmar Presença</button>
+                                    </div>
+                                </div>
+                            </div>`}).join('') : `
+                            <div class="p-20 text-center flex flex-col items-center gap-4">
+                                <span class="material-symbols-outlined text-5xl text-white/10">event_busy</span>
+                                <p class="text-white/20 text-sm italic">Nenhuma atividade agendada.</p>
+                            </div>`}
                     </div>
                 </div>`;
             },
             
             card: async () => {
-                const profile = await getUserProfile();
-                return `<div class="p-6 pt-12 flex flex-col items-center justify-center min-h-[75vh] animate-in">
-                    <div class="relative w-full aspect-[2/3] max-w-[320px] rounded-[2.5rem] bg-card-dark overflow-hidden shadow-[0_40px_80px_-15px_rgba(0,0,0,0.9)] border border-white/10 group">
+                const p = await getUserProfile();
+                return `
+                <div class="min-h-screen flex flex-col items-center justify-center p-6 pt-12 animate-in pb-32">
+                    <!-- Top Bar Refinado -->
+                    <div class="flex items-center w-full justify-between mb-8">
+                        <button onclick="router.go('home')" class="size-10 rounded-full glass-panel flex items-center justify-center text-white active:scale-90 transition-transform">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                        </button>
+                        <h2 class="text-lg font-bold tracking-tight">Cariominas Card</h2>
+                        <button class="size-10 rounded-full glass-panel flex items-center justify-center text-white active:scale-90 transition-transform">
+                            <span class="material-symbols-outlined">share</span>
+                        </button>
+                    </div>
+
+                    <!-- FIFA PREMIUM CARD (FIXED ALIGNMENT) -->
+                    <div class="relative w-full aspect-[2/3] max-w-[320px] bg-card-dark rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8),0_10px_30px_-10px_rgba(236,19,30,0.3)] overflow-hidden border border-white/10">
                         <div class="absolute inset-0 bg-card-gradient"></div>
                         <div class="absolute inset-0 bg-card-shine pointer-events-none z-20"></div>
-                        <div class="relative z-10 p-8 h-full flex flex-col items-center">
-                            <div class="flex justify-between w-full items-start mb-4">
+                        
+                        <div class="relative h-full flex flex-col z-10 p-6">
+                            <!-- Pilar Esquerdo: Rating e Meta -->
+                            <div class="flex justify-between items-start">
                                 <div class="flex flex-col items-center">
-                                    <span class="text-6xl font-black text-accent-gold tracking-tighter drop-shadow-lg">${profile.overall || '80'}</span>
-                                    <span class="text-[10px] font-bold text-white/50 uppercase tracking-widest">${profile.posicao || 'POS'}</span>
+                                    <span class="text-6xl font-black text-accent-gold tracking-tighter drop-shadow-2xl leading-none">${p.overall || '80'}</span>
+                                    <span class="text-base font-bold text-white uppercase tracking-widest mt-1">${p.posicao || 'ATA'}</span>
+                                    
+                                    <div class="w-8 h-px bg-white/20 my-3"></div>
+                                    
+                                    <!-- Bandeira com Alinhamento Corrigido -->
+                                    <div class="flex flex-col items-center gap-1.5">
+                                        <div class="w-7 h-4.5 bg-yellow-400 rounded-[2px] relative overflow-hidden shadow-sm border border-white/10">
+                                            <div class="absolute inset-0 flex items-center justify-center"><div class="w-full h-2.5 bg-green-600"></div></div>
+                                            <div class="absolute inset-0 flex items-center justify-center"><div class="size-1.5 bg-blue-700 rounded-full"></div></div>
+                                        </div>
+                                        <span class="text-[9px] font-black text-white/50 tracking-widest leading-none">BRA</span>
+                                    </div>
                                 </div>
-                                <div class="w-12 h-12 glass-panel rounded-full flex items-center justify-center shadow-inner">
-                                    <span class="material-symbols-outlined text-primary text-3xl">shield</span>
+
+                                <!-- Escudo do Clube -->
+                                <div class="w-14 h-14 glass-panel rounded-full flex items-center justify-center border border-white/10 shadow-inner">
+                                     <span class="material-symbols-outlined text-3xl text-primary">shield</span>
                                 </div>
                             </div>
-                            <div class="flex-1 relative w-full flex items-end justify-center mb-6">
-                                <div class="absolute bottom-0 w-48 h-48 bg-primary/20 blur-[50px] rounded-full"></div>
-                                ${profile.foto ? `<img src="${profile.foto}" class="w-full h-full object-contain z-10" style="mask-image: linear-gradient(to bottom, black 80%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);">` : '<div class="opacity-10 mb-12"><span class="material-symbols-outlined text-[140px]">person</span></div>'}
+                            
+                            <!-- Jogador com Integração Melhorada (Menos 'Pá') -->
+                            <div class="flex-1 relative -mx-6 mt-2 mb-2 flex items-end justify-center overflow-hidden">
+                                <!-- Glow suave centralizado atrás do jogador -->
+                                <div class="absolute bottom-10 size-48 bg-primary/30 blur-[60px] rounded-full opacity-60"></div>
+                                
+                                ${p.foto ? `
+                                    <img src="${p.foto}" class="relative w-full h-[110%] object-contain object-bottom z-10" 
+                                         style="mask-image: linear-gradient(to bottom, black 85%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);">
+                                ` : `
+                                    <div class="opacity-10 mb-12"><span class="material-symbols-outlined text-[150px]">person</span></div>
+                                `}
                             </div>
-                            <div class="text-center w-full mb-8">
-                                <h2 class="text-3xl font-black uppercase tracking-tight leading-none mb-1 text-white">${profile.nome || 'JOGADOR'}</h2>
-                                <p class="text-accent-gold font-bold text-[10px] uppercase tracking-[0.4em]">${profile.categoria || 'BASE'}</p>
-                            </div>
-                            <div class="w-full grid grid-cols-3 gap-3 pt-4 border-t border-white/10">
-                                <div class="text-center"><p class="text-[8px] text-white/30 font-black uppercase">VEL</p><p class="font-bold text-lg text-white">${profile.vel || '75'}</p></div>
-                                <div class="text-center"><p class="text-[8px] text-white/30 font-black uppercase">PAS</p><p class="font-bold text-lg text-white">${profile.pas || '75'}</p></div>
-                                <div class="text-center"><p class="text-[8px] text-white/30 font-black uppercase">DRI</p><p class="font-bold text-lg text-white">${profile.dri || '75'}</p></div>
+
+                            <!-- Área de Dados Inferior -->
+                            <div class="flex flex-col items-center">
+                                <h1 class="text-3xl font-black text-white uppercase tracking-tight text-center leading-none mb-1">
+                                    ${p.nome ? p.nome.split(' ')[0] : 'PLAYER'} <span class="text-accent-gold">${p.nome && p.nome.split(' ')[1] ? p.nome.split(' ')[1] : ''}</span>
+                                </h1>
+                                
+                                <div class="flex items-center gap-2.5 text-[9px] font-bold text-white/40 uppercase tracking-[0.2em] mb-4">
+                                    <span>${p.categoria || 'ELITE'}</span>
+                                    <div class="size-1 bg-accent-gold rounded-full opacity-50"></div>
+                                    <span>${p.pe || 'DESTRO'}</span>
+                                    <div class="size-1 bg-accent-gold rounded-full opacity-50"></div>
+                                    <span>${p.altura || '1.75'}M</span>
+                                </div>
+
+                                <!-- Stats Grid Moderno -->
+                                <div class="w-full grid grid-cols-3 gap-2 px-2 mb-4">
+                                    <div class="flex flex-col items-center bg-white/[0.03] rounded-xl py-2 border border-white/5">
+                                        <span class="text-[8px] text-white/30 font-black uppercase tracking-tighter">VEL</span>
+                                        <span class="text-lg font-bold text-white leading-none">${p.vel || '75'}</span>
+                                    </div>
+                                    <div class="flex flex-col items-center bg-white/[0.03] rounded-xl py-2 border border-white/5">
+                                        <span class="text-[8px] text-white/30 font-black uppercase tracking-tighter">DRI</span>
+                                        <span class="text-lg font-bold text-white leading-none">${p.dri || '75'}</span>
+                                    </div>
+                                    <div class="flex flex-col items-center bg-white/[0.03] rounded-xl py-2 border border-white/5">
+                                        <span class="text-[8px] text-white/30 font-black uppercase tracking-tighter">PAS</span>
+                                        <span class="text-lg font-bold text-white leading-none">${p.pas || '75'}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Cartão de Acesso Dinâmico -->
+                                <div class="w-full bg-white rounded-2xl p-2.5 flex items-center justify-between shadow-2xl">
+                                    <div class="flex flex-col gap-0.5 pl-2">
+                                        <div class="flex items-center gap-1.5">
+                                            <div class="size-1.5 rounded-full bg-accent-green animate-pulse"></div>
+                                            <span class="text-accent-green text-[9px] font-black uppercase tracking-wider">Membro Ativo</span>
+                                        </div>
+                                        <span class="text-neutral-400 text-[8px] uppercase font-bold tracking-widest">ID: ${auth.currentUser?.uid.substring(0,8).toUpperCase()}</span>
+                                    </div>
+                                    <div class="bg-neutral-100 p-1 rounded-lg">
+                                        <div class="size-8 bg-neutral-900 overflow-hidden relative">
+                                            <svg class="w-full h-full fill-white p-0.5" viewBox="0 0 100 100">
+                                                <path d="M10 10h30v30h-30zM50 10h10v10h-10zM70 10h20v20h-20zM10 50h20v20h-20zM50 40h40v40h-40z"></path>
+                                                <rect x="55" y="15" width="10" height="10"></rect>
+                                                <rect x="15" y="70" width="10" height="10"></rect>
+                                                <rect x="75" y="60" width="10" height="10"></rect>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="absolute inset-0 metallic-sheen pointer-events-none rounded-[2.5rem] z-30 mix-blend-overlay"></div>
                     </div>
+
+                    <button class="mt-8 flex items-center gap-3 bg-primary/10 hover:bg-primary/20 active:scale-95 text-primary px-8 py-3.5 rounded-full transition-all border border-primary/20 shadow-lg group">
+                        <span class="material-symbols-outlined group-hover:rotate-12 transition-transform">ios_share</span>
+                        <span class="font-black text-[10px] uppercase tracking-[0.2em]">Salvar na Galeria</span>
+                    </button>
                 </div>`;
             },
 
@@ -437,28 +548,23 @@
                 const pendentes = payments.filter(p => p.status === 'pendente');
                 const total = pendentes.reduce((acc, curr) => acc + (Number(curr.valor) || Number(curr.amount) || 0), 0);
                 return `<div class="p-6 pt-8 space-y-8 animate-in pb-32">
-                    <h1 class="text-3xl font-black italic uppercase">Financeiro</h1>
+                    <h1 class="text-3xl font-black italic uppercase leading-none">Financeiro</h1>
                     <div class="p-8 rounded-[2.5rem] glass-panel text-center space-y-3 relative overflow-hidden border border-white/10 shadow-2xl">
                         <div class="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
                         <p class="text-white/30 text-[10px] font-bold uppercase tracking-[0.2em]">Total Pendente</p>
                         <h2 class="text-5xl font-black text-white">R$ ${total.toFixed(2)}</h2>
-                        <button class="w-full mt-8 bg-primary py-4 rounded-2xl font-bold shadow-2xl shadow-primary/30 active:scale-95 transition-all text-white">Pagar agora</button>
+                        <button class="w-full mt-8 bg-primary py-4 rounded-2xl font-bold shadow-2xl shadow-primary/30 active:scale-95 transition-all text-white uppercase tracking-widest text-[10px]">Pagar agora</button>
                     </div>
                     <div class="space-y-4">
                         <h3 class="font-bold text-lg px-2 text-white">Extrato</h3>
-                        <div class="space-y-3">
-                            ${payments.length ? payments.map(p => `
-                                <div class="flex justify-between items-center p-5 rounded-[1.8rem] bg-surface border border-white/5 shadow-sm">
-                                    <div class="flex items-center gap-4">
-                                        <span class="material-symbols-outlined ${p.status === 'pago' ? 'text-accent-green' : 'text-primary'}">${p.status === 'pago' ? 'check_circle' : 'hourglass_top'}</span>
-                                        <div>
-                                            <p class="text-sm font-bold text-white/90">${p.title || p.titulo}</p>
-                                            <p class="text-[9px] text-white/20 uppercase font-black">${p.date || p.dataVencimento}</p>
-                                        </div>
-                                    </div>
-                                    <p class="font-black text-sm text-white/90">R$ ${Number(p.valor || p.amount || 0).toFixed(2)}</p>
+                        <div class="space-y-3">${payments.length ? payments.map(p => `
+                            <div class="flex justify-between items-center p-5 rounded-[1.8rem] bg-surface border border-white/5 shadow-sm">
+                                <div class="flex items-center gap-4">
+                                    <span class="material-symbols-outlined ${p.status === 'pago' ? 'text-accent-green' : 'text-primary'}">${p.status === 'pago' ? 'check_circle' : 'hourglass_top'}</span>
+                                    <div><p class="text-sm font-bold text-white/90">${p.title || p.titulo}</p><p class="text-[9px] text-white/20 uppercase font-black">${p.date || p.dataVencimento}</p></div>
                                 </div>
-                            `).join('') : `<p class="text-center text-white/10 py-12 text-xs italic">Sem registos financeiros.</p>`}
+                                <p class="font-black text-sm text-white/90">R$ ${Number(p.valor || p.amount || 0).toFixed(2)}</p>
+                            </div>`).join('') : `<p class="text-center text-white/10 py-12 text-xs italic font-medium">Sem registros.</p>`}
                         </div>
                     </div>
                 </div>`;
@@ -466,48 +572,85 @@
 
             perfil: async () => {
                 const profile = await getUserProfile();
-                return `<div class="p-6 pt-8 space-y-8 animate-in pb-32">
-                    <div class="flex flex-col items-center gap-6 text-center">
-                        <div class="relative">
-                            <div class="absolute -inset-1 rounded-full bg-gradient-to-br from-primary to-transparent opacity-50 blur-sm"></div>
-                            <div class="relative bg-center bg-no-repeat bg-cover rounded-full h-32 w-32 border-4 border-bg-dark shadow-xl" 
-                                 style="background-image: url('${profile.foto || 'https://via.placeholder.com/150'}');">
-                            </div>
-                            
-                            <label class="absolute bottom-0 right-0 bg-primary text-white size-10 flex items-center justify-center rounded-full border-4 border-bg-dark cursor-pointer active:scale-90 transition-transform">
-                                <span class="material-symbols-outlined text-sm">photo_camera</span>
-                                <input type="file" class="hidden" accept="image/*" onchange="handlePhotoUpload(event)">
-                            </label>
+                return `
+                <div class="animate-in pb-32">
+                    <header class="relative h-64 w-full overflow-hidden">
+                        <div class="absolute inset-0 bg-stadium bg-cover bg-center"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-bg-dark via-bg-dark/40 to-transparent"></div>
+                        <div class="absolute top-12 left-6 right-6 flex justify-between items-center">
+                            <button onclick="router.go('home')" class="size-10 rounded-full glass-panel flex items-center justify-center text-white active:scale-90 transition-transform">
+                                <span class="material-symbols-outlined">arrow_back</span>
+                            </button>
+                            <button onclick="signOut(auth)" class="px-4 py-2 rounded-full glass-panel flex items-center gap-2 text-white active:scale-90 transition-transform">
+                                <span class="text-[9px] font-black uppercase tracking-widest">Sair</span>
+                                <span class="material-symbols-outlined text-sm text-primary">logout</span>
+                            </button>
                         </div>
-                        <div>
-                            <h2 class="text-2xl font-black text-white">${profile.nome || 'Jogador'}</h2>
-                            <p class="text-primary text-[11px] font-black uppercase tracking-[0.4em] mt-1">${profile.categoria || 'Categoria'} Elite</p>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        ${[
-                            {l:'Posição', v:profile.posicao}, 
-                            {l:'Pé Dominante', v:profile.pe}, 
-                            {l:'Altura', v:profile.altura}, 
-                            {l:'Peso', v:(profile.peso || '-') + 'kg'}
-                        ].map(item => `
-                            <div class="bg-surface/60 p-5 rounded-[1.8rem] border border-white/5 shadow-inner">
-                                <p class="text-[9px] text-white/30 uppercase font-black mb-1.5">${item.l}</p>
-                                <p class="font-bold text-white/90">${item.v || '-'}</p>
-                            </div>
-                        `).join('')}
-                    </div>
+                    </header>
 
-                    <div class="pt-6 flex flex-col gap-4">
-                        <div class="p-5 glass-panel rounded-2xl border border-white/5 text-center">
-                            <p class="text-[8px] text-white/30 uppercase font-black mb-2">ID Atleta (Firestore)</p>
-                            <code class="text-[10px] text-primary break-all font-mono select-all">${auth.currentUser?.uid}</code>
+                    <section class="px-6 -mt-20 relative z-10">
+                        <div class="flex flex-col items-center text-center">
+                            <div class="relative">
+                                <div class="absolute -inset-1.5 rounded-full bg-gradient-to-tr from-primary to-accent-gold opacity-60 blur-md"></div>
+                                <div class="relative size-36 rounded-full border-4 border-bg-dark overflow-hidden bg-surface profile-avatar-main shadow-2xl">
+                                    ${profile.foto ? `<img src="${profile.foto}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center bg-accent"><span class="material-symbols-outlined text-white/20 text-5xl">person</span></div>`}
+                                </div>
+                                <label class="absolute bottom-1 right-1 bg-primary text-white size-10 flex items-center justify-center rounded-full border-4 border-bg-dark cursor-pointer active:scale-90 transition-transform shadow-lg">
+                                    <span class="material-symbols-outlined text-sm">photo_camera</span>
+                                    <input type="file" class="hidden" accept="image/*" onchange="handlePhotoUpload(event)">
+                                </label>
+                            </div>
+
+                            <div class="mt-6">
+                                <h2 class="text-3xl font-black text-white tracking-tight leading-none">${profile.nome || 'Jogador'}</h2>
+                                <div class="flex items-center justify-center gap-2 mt-2">
+                                    <span class="text-primary text-[10px] font-black uppercase tracking-[0.3em] bg-primary/10 px-3 py-1 rounded-full border border-primary/20">${profile.categoria || 'Base'} ELITE</span>
+                                </div>
+                            </div>
                         </div>
-                        <button onclick="signOut(auth)" class="w-full py-4 glass-panel border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-500/10 transition-colors">
-                            Terminar Sessão
-                        </button>
-                    </div>
+
+                        <div class="grid grid-cols-2 gap-4 mt-10">
+                            <div class="bg-surface/40 p-5 rounded-[2.5rem] border border-white/5 glass-panel shadow-sm">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <div class="size-8 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400"><span class="material-symbols-outlined text-sm">sports_soccer</span></div>
+                                    <p class="text-[9px] text-white/30 uppercase font-black tracking-widest leading-none">Posição</p>
+                                </div>
+                                <p class="font-bold text-white text-lg">${profile.posicao || '-'}</p>
+                            </div>
+
+                            <div class="bg-surface/40 p-5 rounded-[2.5rem] border border-white/5 glass-panel shadow-sm">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <div class="size-8 rounded-xl bg-accent-gold/10 flex items-center justify-center text-accent-gold"><span class="material-symbols-outlined text-sm">footprint</span></div>
+                                    <p class="text-[9px] text-white/30 uppercase font-black tracking-widest leading-none">Domínio</p>
+                                </div>
+                                <p class="font-bold text-white text-lg">${profile.pe || '-'}</p>
+                            </div>
+
+                            <div class="bg-surface/40 p-5 rounded-[2.5rem] border border-white/5 glass-panel shadow-sm">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <div class="size-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400"><span class="material-symbols-outlined text-sm">straighten</span></div>
+                                    <p class="text-[9px] text-white/30 uppercase font-black tracking-widest leading-none">Altura</p>
+                                </div>
+                                <p class="font-bold text-white text-lg">${profile.altura || '-'} m</p>
+                            </div>
+
+                            <div class="bg-surface/40 p-5 rounded-[2.5rem] border border-white/5 glass-panel shadow-sm">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <div class="size-8 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400"><span class="material-symbols-outlined text-sm">monitor_weight</span></div>
+                                    <p class="text-[9px] text-white/30 uppercase font-black tracking-widest leading-none">Peso</p>
+                                </div>
+                                <p class="font-bold text-white text-lg">${profile.peso || '-'} kg</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 space-y-4">
+                            <div class="p-6 rounded-[2.5rem] glass-panel border border-white/5 flex flex-col items-center gap-2">
+                                <p class="text-[8px] text-white/30 uppercase font-black tracking-[0.2em] leading-none">ID Cariominas Digital</p>
+                                <code class="text-[10px] text-primary break-all font-mono select-all text-center leading-none">${auth.currentUser?.uid}</code>
+                            </div>
+                            <p class="text-center text-[9px] text-white/20 uppercase font-bold tracking-widest">v2.5.5 • Cariominas FC Digital</p>
+                        </div>
+                    </section>
                 </div>`;
             }
         };
@@ -536,7 +679,7 @@
                 return snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => {
                     const dateA = a.date || a.dataPostagem || 0;
                     const dateB = b.date || b.dataPostagem || 0;
-                    return new Date(dateB) - new Date(dateA);
+                    return new Date(dateA) - new Date(dateB); 
                 });
             } catch (e) { return []; }
         }
@@ -547,11 +690,7 @@
                 e.preventDefault();
                 const email = document.getElementById('login-email').value;
                 const pass = document.getElementById('login-password').value;
-                try { 
-                    await signInWithEmailAndPassword(auth, email, pass); 
-                } catch (err) { 
-                    alert("Credenciais inválidas ou erro de conexão."); 
-                }
+                try { await signInWithEmailAndPassword(auth, email, pass); } catch (err) { alert("Acesso negado."); }
             };
         }
 
@@ -589,7 +728,7 @@
                     await setDoc(doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'settings', 'profile'), data);
                     profileData = data;
                     router.go('home');
-                } catch (err) { alert("Erro ao guardar o perfil."); }
+                } catch (err) { alert("Erro ao salvar."); }
             };
         }
 
@@ -611,13 +750,13 @@
                         await router.go('home');
                     }
                 }
-                
                 loading.style.opacity = '0';
                 setTimeout(() => loading.remove(), 400);
             });
         }
 
         window.onload = bootstrap;
+        window.signOut = signOut;
     </script>
 </body>
 </html>
