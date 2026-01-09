@@ -3,91 +3,131 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Painel Admin - Cariominas FC</title>
+    <title>Admin - Cariominas FC</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet" />
     <script>
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
-                    colors: { "primary": "#ec131e", "bg-dark": "#120a0a", "surface": "#1f1414" },
-                    fontFamily: { "display": ["Lexend", "sans-serif"] }
+                    colors: { 
+                        "primary": "#ec131e", 
+                        "background-dark": "#181111", 
+                        "surface-dark": "#271c1c" 
+                    },
+                    fontFamily: { "display": ["Lexend", "sans-serif"] },
                 },
             },
         }
     </script>
     <style>
-        body { background: #120a0a; color: white; font-family: 'Lexend', sans-serif; }
-        input, select, textarea { 
-            background: #2a1b1b !important; 
-            border: 1px solid rgba(255,255,255,0.05) !important; 
-            color: white !important;
+        body { 
+            background-color: #181111; 
+            color: white; 
+            font-family: 'Lexend', sans-serif; 
+            -webkit-tap-highlight-color: transparent;
         }
+        .glass-panel {
+            background: rgba(39, 28, 28, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .tab-active { color: #ec131e; border-bottom: 2px solid #ec131e; }
+        
+        /* estado inicial: esconde tudo até validar login */
+        #admin-content { display: none; }
+        #auth-check-screen { display: flex; }
     </style>
 </head>
-<body class="p-6 md:p-12 max-w-4xl mx-auto space-y-12 pb-24">
+<body class="p-4 md:p-8 max-w-4xl mx-auto pb-24">
 
-    <div id="admin-auth" class="fixed inset-0 z-50 bg-bg-dark flex items-center justify-center p-6">
-        <div class="max-w-sm w-full space-y-8 text-center">
-            <h1 class="text-3xl font-bold">Admin Cariominas</h1>
-            <form id="admin-login-form" class="space-y-4">
-                <input type="email" id="admin-email" class="w-full p-4 rounded-xl" placeholder="E-mail Admin" required>
-                <input type="password" id="admin-pass" class="w-full p-4 rounded-xl" placeholder="Senha" required>
-                <button type="submit" class="w-full bg-primary py-4 rounded-xl font-bold">Acessar Painel</button>
-            </form>
+    <!-- tela de bloqueio / loading -->
+    <div id="auth-check-screen" class="fixed inset-0 z-[1000] bg-background-dark flex flex-col items-center justify-center p-6 text-center">
+        <div id="auth-loading" class="flex flex-col items-center gap-4">
+            <div class="size-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+            <p class="text-xs font-bold uppercase tracking-widest text-gray-500">Verificando Credenciais...</p>
+        </div>
+        <div id="auth-denied" class="hidden flex-col items-center gap-6 animate-in">
+            <span class="material-symbols-outlined text-primary text-6xl">lock</span>
+            <h2 class="text-2xl font-bold italic uppercase">Acesso Restrito</h2>
+            <p class="text-gray-400 text-sm max-w-xs">Você precisa estar logado como administrador para acessar este painel.</p>
+            <a href="index.html" class="bg-white/5 border border-white/10 px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all">Voltar ao App</a>
         </div>
     </div>
 
-    <header class="flex justify-between items-end border-b border-white/10 pb-6">
-        <div>
-            <h1 class="text-3xl font-bold">Controle Administrativo</h1>
-            <p class="text-white/40">Gerencie o conteúdo do clube</p>
+    <!-- conteúdo protegido -->
+    <div id="admin-content">
+        <header class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-black italic uppercase tracking-tight">Painel <span class="text-primary">Admin</span></h1>
+                <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mt-1">Cariominas FC • Gestão Digital</p>
+            </div>
+            <div class="text-[10px] bg-white/5 px-3 py-1 rounded-full border border-white/10 text-gray-400 uppercase font-black tracking-widest">Admin Mode</div>
+        </header>
+
+        <!-- Navegação por Abas -->
+        <nav class="flex gap-8 border-b border-white/5 mb-8 overflow-x-auto no-scrollbar">
+            <button onclick="switchTab('postar')" id="btn-postar" class="tab-btn pb-4 text-sm font-bold uppercase tracking-widest tab-active">Criar Conteúdo</button>
+            <button onclick="switchTab('gerenciar-noticias')" id="btn-gerenciar-noticias" class="tab-btn pb-4 text-sm font-bold uppercase tracking-widest text-gray-500">Notícias</button>
+            <button onclick="switchTab('gerenciar-eventos')" id="btn-gerenciar-eventos" class="tab-btn pb-4 text-sm font-bold uppercase tracking-widest text-gray-500">Agenda</button>
+        </nav>
+
+        <!-- ABA: POSTAR -->
+        <div id="tab-postar" class="tab-content space-y-8">
+            <section class="bg-surface-dark/40 p-6 rounded-3xl border border-white/5 glass-panel shadow-2xl">
+                <h2 class="text-xl font-bold mb-6 flex items-center gap-3"><span class="material-symbols-outlined text-primary">feed</span> Nova Notícia</h2>
+                <form id="newsForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="text" id="newsTitle" placeholder="Título da Notícia" class="md:col-span-2 bg-black/40 border-white/10 rounded-2xl text-white placeholder-gray-600 focus:border-primary focus:ring-primary py-4 px-5" required>
+                    <input type="url" id="newsImage" placeholder="URL da Capa (Ex: https://...)" class="bg-black/40 border-white/10 rounded-2xl text-white placeholder-gray-600 focus:border-primary focus:ring-primary py-4 px-5" required>
+                    <input type="text" id="newsDate" placeholder="Data Exibição (Ex: 12 Jan)" class="bg-black/40 border-white/10 rounded-2xl text-white placeholder-gray-600 focus:border-primary focus:ring-primary py-4 px-5" required>
+                    <textarea id="newsBody" placeholder="Corpo da notícia..." class="md:col-span-2 bg-black/40 border-white/10 rounded-2xl text-white placeholder-gray-600 focus:border-primary focus:ring-primary py-4 px-5" rows="3"></textarea>
+                    <button type="submit" class="md:col-span-2 bg-primary hover:brightness-110 active:scale-[0.98] transition-all text-white font-black uppercase tracking-widest py-4 rounded-2xl shadow-xl shadow-primary/20">Publicar Notícia</button>
+                </form>
+            </section>
+
+            <section class="bg-surface-dark/40 p-6 rounded-3xl border border-white/5 glass-panel shadow-2xl">
+                <h2 class="text-xl font-bold mb-6 flex items-center gap-3"><span class="material-symbols-outlined text-primary">calendar_month</span> Novo Evento</h2>
+                <form id="eventForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="text" id="eventTitle" placeholder="Título (Ex: Treino Tático)" class="md:col-span-2 bg-black/40 border-white/10 rounded-2xl text-white placeholder-gray-600 focus:border-primary focus:ring-primary py-4 px-5" required>
+                    <select id="eventType" class="bg-black/40 border-white/10 rounded-2xl text-white focus:border-primary focus:ring-primary py-4 px-5">
+                        <option value="Treino">Treino</option>
+                        <option value="Jogo">Jogo</option>
+                        <option value="Torneio">Torneio</option>
+                    </select>
+                    <input type="text" id="eventDate" placeholder="Data (Ex: 15 Jan)" class="bg-black/40 border-white/10 rounded-2xl text-white placeholder-gray-600 focus:border-primary focus:ring-primary py-4 px-5" required>
+                    <input type="text" id="eventLocation" placeholder="Local (Ex: CT Cariominas)" class="bg-black/40 border-white/10 rounded-2xl text-white placeholder-gray-600 focus:border-primary focus:ring-primary py-4 px-5" required>
+                    <input type="time" id="eventTime" class="bg-black/40 border-white/10 rounded-2xl text-white focus:border-primary focus:ring-primary py-4 px-5" required>
+                    <button type="submit" class="md:col-span-2 bg-primary hover:brightness-110 active:scale-[0.98] transition-all text-white font-black uppercase tracking-widest py-4 rounded-2xl shadow-xl shadow-primary/20">Agendar Evento</button>
+                </form>
+            </section>
         </div>
-        <button onclick="auth.signOut()" class="text-xs text-red-500 font-bold uppercase">Sair do Painel</button>
-    </header>
 
-    <div class="grid md:grid-cols-2 gap-8">
-        <section class="bg-surface p-6 rounded-3xl border border-white/5 space-y-6">
-            <h2 class="text-xl font-bold text-primary">Nova Notícia</h2>
-            <form id="newsForm" class="space-y-4">
-                <input type="text" id="newsTitle" placeholder="Título da Notícia" class="w-full rounded-xl" required>
-                <input type="url" id="newsImage" placeholder="URL da Capa" class="w-full rounded-xl" required>
-                <button type="submit" class="w-full bg-primary py-3 rounded-xl font-bold">Publicar</button>
-            </form>
-        </section>
+        <!-- ABA: GERENCIAR NOTÍCIAS -->
+        <div id="tab-gerenciar-noticias" class="tab-content hidden space-y-4">
+            <h2 class="text-xl font-bold mb-6 px-1 italic">Mural Atual</h2>
+            <div id="news-list" class="grid grid-cols-1 gap-4">
+                <p class="text-gray-500 italic p-8 text-center">Carregando notícias...</p>
+            </div>
+        </div>
 
-        <section class="bg-surface p-6 rounded-3xl border border-white/5 space-y-6">
-            <h2 class="text-xl font-bold text-primary">Nova Atividade</h2>
-            <form id="eventForm" class="space-y-4">
-                <input type="text" id="eventTitle" placeholder="Ex: Treino de Finalização" class="w-full rounded-xl" required>
-                <div class="grid grid-cols-2 gap-3">
-                    <input type="date" id="eventDate" class="rounded-xl" required>
-                    <input type="time" id="eventTime" class="rounded-xl" required>
-                </div>
-                <input type="text" id="eventLocation" placeholder="Local" class="w-full rounded-xl" required>
-                <button type="submit" class="w-full bg-primary py-3 rounded-xl font-bold">Agendar</button>
-            </form>
-        </section>
+        <!-- ABA: GERENCIAR EVENTOS -->
+        <div id="tab-gerenciar-eventos" class="tab-content hidden space-y-4">
+            <h2 class="text-xl font-bold mb-6 px-1 italic">Agenda do Clube</h2>
+            <div id="events-list" class="grid grid-cols-1 gap-4">
+                <p class="text-gray-500 italic p-8 text-center">Carregando eventos...</p>
+            </div>
+        </div>
     </div>
-
-    <section class="bg-surface p-8 rounded-3xl border border-white/5 space-y-6">
-        <h2 class="text-xl font-bold text-primary">Gerenciar Ficha do Atleta</h2>
-        <form id="profileUpdateForm" class="grid md:grid-cols-3 gap-4">
-            <input type="text" id="pId" placeholder="Cole o UID do Atleta aqui" class="md:col-span-3 rounded-xl" required>
-            <input type="number" id="pOvr" placeholder="Overall (0-99)" class="rounded-xl">
-            <input type="number" id="pVel" placeholder="Velocidade" class="rounded-xl">
-            <input type="number" id="pPas" placeholder="Passe" class="rounded-xl">
-            <input type="number" id="pDri" placeholder="Drible" class="rounded-xl">
-            <button type="submit" class="md:col-span-3 bg-white text-black py-3 rounded-xl font-bold">Atualizar Card</button>
-        </form>
-    </section>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Fallback pra config caso não venha do ambiente
         const configReal = {
             apiKey: "AIzaSyBAyhAtApmZ9oYi6fu_cX_H25WYXk513HI",
             authDomain: "cariominasapp.firebaseapp.com",
@@ -104,60 +144,135 @@
         const db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'cariominasapp';
 
-        onAuthStateChanged(auth, (u) => {
-            document.getElementById('admin-auth').style.display = u ? 'none' : 'flex';
+        // trava de segurança no carregamento
+        onAuthStateChanged(auth, (user) => {
+            const screen = document.getElementById('auth-check-screen');
+            const content = document.getElementById('admin-content');
+            const loading = document.getElementById('auth-loading');
+            const denied = document.getElementById('auth-denied');
+
+            if (user) {
+                // usuario logado, libera o painel
+                screen.style.display = 'none';
+                content.style.display = 'block';
+            } else {
+                // se não tiver auth token, tenta sign in silencioso ou chuta
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    signInWithCustomToken(auth, __initial_auth_token).catch(() => {
+                        loading.style.display = 'none';
+                        denied.style.display = 'flex';
+                    });
+                } else {
+                    loading.style.display = 'none';
+                    denied.style.display = 'flex';
+                }
+            }
         });
 
-        document.getElementById('admin-login-form').onsubmit = async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('admin-email').value;
-            const pass = document.getElementById('admin-pass').value;
-            try { await signInWithEmailAndPassword(auth, email, pass); } catch (err) { alert("Acesso negado."); }
+        // Switch de Abas
+        window.switchTab = (tabId) => {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active', 'text-primary'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.add('text-gray-500'));
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`btn-${tabId}`).classList.add('tab-active', 'text-primary');
+            document.getElementById(`btn-${tabId}`).classList.remove('text-gray-500');
         };
 
-        document.getElementById('newsForm').onsubmit = async (e) => {
+        // --- GESTÃO DE NOTÍCIAS ---
+        document.getElementById('newsForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const data = {
+                titulo: document.getElementById('newsTitle').value,
+                capa: document.getElementById('newsImage').value,
+                resumo: document.getElementById('newsBody').value,
+                dataPostagem: document.getElementById('newsDate').value,
+                createdAt: new Date().getTime()
+            };
+            
             try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'news'), {
-                    titulo: document.getElementById('newsTitle').value,
-                    capa: document.getElementById('newsImage').value,
-                    date: new Date().toISOString(),
-                    dataPostagem: new Date().toLocaleDateString('pt-BR')
-                });
-                alert('Notícia publicada!'); e.target.reset();
-            } catch (err) { alert("Erro ao postar notícia: " + err.message); }
-        };
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'news'), data);
+                alert('Notícia publicada com sucesso!');
+                e.target.reset();
+            } catch (error) { alert('Erro: ' + error.message); }
+        });
 
-        document.getElementById('eventForm').onsubmit = async (e) => {
+        onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'news'), orderBy('createdAt', 'desc')), (snap) => {
+            const container = document.getElementById('news-list');
+            if (snap.empty) {
+                container.innerHTML = '<div class="p-12 text-center text-gray-600 border border-dashed border-white/5 rounded-3xl">Nenhuma notícia encontrada.</div>';
+                return;
+            }
+            container.innerHTML = snap.docs.map(d => {
+                const item = d.data();
+                return `
+                <div class="flex gap-4 p-4 rounded-3xl bg-surface-dark/40 border border-white/5 items-center glass-panel">
+                    <img src="${item.capa}" class="size-16 rounded-xl object-cover bg-black/20" onerror="this.src='https://via.placeholder.com/150'">
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-bold text-sm truncate text-white/90">${item.titulo}</h4>
+                        <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest">${item.dataPostagem}</p>
+                    </div>
+                    <button onclick="deleteDocById('news', '${d.id}')" class="size-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all active:scale-90">
+                        <span class="material-symbols-outlined text-sm">delete</span>
+                    </button>
+                </div>`;
+            }).join('');
+        });
+
+        // --- GESTÃO DE EVENTOS ---
+        document.getElementById('eventForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const dateVal = document.getElementById('eventDate').value;
+            const data = {
+                titulo: document.getElementById('eventTitle').value,
+                type: document.getElementById('eventType').value,
+                local: document.getElementById('eventLocation').value,
+                hora: document.getElementById('eventTime').value,
+                dataExtenso: document.getElementById('eventDate').value,
+                createdAt: new Date().getTime()
+            };
+
             try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'events'), {
-                    titulo: document.getElementById('eventTitle').value,
-                    date: dateVal,
-                    hora: document.getElementById('eventTime').value,
-                    local: document.getElementById('eventLocation').value,
-                    dataExtenso: new Date(dateVal + 'T12:00:00').toLocaleDateString('pt-BR', { day:'2-digit', month:'short' })
-                });
-                alert('Evento agendado!'); e.target.reset();
-            } catch (err) { alert("Erro ao agendar: " + err.message); }
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'events'), data);
+                alert('Evento agendado!');
+                e.target.reset();
+            } catch (error) { alert('Erro: ' + error.message); }
+        });
+
+        onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'events'), orderBy('createdAt', 'desc')), (snap) => {
+            const container = document.getElementById('events-list');
+            if (snap.empty) {
+                container.innerHTML = '<div class="p-12 text-center text-gray-600 border border-dashed border-white/5 rounded-3xl">Nenhum evento na agenda.</div>';
+                return;
+            }
+            container.innerHTML = snap.docs.map(d => {
+                const item = d.data();
+                const isGame = item.type === 'Jogo';
+                return `
+                <div class="p-5 rounded-3xl bg-surface-dark/40 border border-white/5 glass-panel flex justify-between items-center">
+                    <div class="flex gap-4 items-center">
+                        <div class="size-10 rounded-full ${isGame ? 'bg-orange-500/20 text-orange-500' : 'bg-primary/20 text-primary'} flex items-center justify-center">
+                            <span class="material-symbols-outlined text-sm">${isGame ? 'sports_soccer' : 'fitness_center'}</span>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-white/90 leading-tight">${item.titulo}</h4>
+                            <p class="text-[10px] text-gray-500 uppercase font-black">${item.dataExtenso} • ${item.hora}</p>
+                        </div>
+                    </div>
+                    <button onclick="deleteDocById('events', '${d.id}')" class="size-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all active:scale-90">
+                        <span class="material-symbols-outlined text-sm">delete</span>
+                    </button>
+                </div>`;
+            }).join('');
+        });
+
+        window.deleteDocById = async (col, id) => {
+            if (!confirm('Tem certeza que deseja apagar este item?')) return;
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', col, id));
+            } catch (err) { alert('Erro ao apagar: ' + err.message); }
         };
 
-        document.getElementById('profileUpdateForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const uid = document.getElementById('pId').value;
-            try {
-                await setDoc(doc(db, 'artifacts', appId, 'users', uid, 'settings', 'profile'), {
-                    overall: document.getElementById('pOvr').value,
-                    vel: document.getElementById('pVel').value,
-                    pas: document.getElementById('pPas').value,
-                    dri: document.getElementById('pDri').value
-                }, { merge: true });
-                alert('Ficha atualizada!'); e.target.reset();
-            } catch (err) { alert("Erro ao atualizar card."); }
-        };
-
-        window.auth = auth;
     </script>
 </body>
 </html>
