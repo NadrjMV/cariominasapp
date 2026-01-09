@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="dark" lang="pt-BR">
+<html lang="pt-BR">
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
@@ -14,8 +14,9 @@
                 extend: {
                     colors: { 
                         "primary": "#ec131e", 
-                        "background-dark": "#181111", 
-                        "surface-dark": "#271c1c" 
+                        "background-dark": "#1c1c1e", 
+                        "background-light": "#f2f2f7",
+                        "surface-dark": "#2c2c2e" 
                     },
                     fontFamily: { "display": ["Lexend", "sans-serif"] },
                 },
@@ -24,28 +25,49 @@
     </script>
     <style>
         body { 
-            background-color: #181111; 
-            color: white; 
+            /* Transição suave de cor de fundo */
+            background-color: #f2f2f7; 
+            color: #1c1c1e; 
             font-family: 'Lexend', sans-serif; 
+            transition: background-color 0.4s ease, color 0.4s ease;
             -webkit-tap-highlight-color: transparent;
         }
+        html.dark body { background-color: #1c1c1e; color: #ffffff; }
+
+        /* Glass panel adaptativo estilo iOS */
         .glass-panel {
-            background: rgba(39, 28, 28, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
+        html.dark .glass-panel {
+            background: rgba(44, 44, 46, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .tab-active { color: #ec131e; border-bottom: 2px solid #ec131e; }
+        .tab-active { color: #ec131e; border-bottom: 2.5px solid #ec131e; }
         
-        /* estado inicial: esconde tudo até validar login */
         #admin-content { display: none; }
         #auth-check-screen { display: flex; }
+
+        /* Inputs adaptativos */
+        input, textarea, select {
+            background-color: rgba(0, 0, 0, 0.04) !important;
+            border: 1px solid rgba(0, 0, 0, 0.08) !important;
+            border-radius: 14px !important;
+            color: #1c1c1e !important;
+        }
+        html.dark input, html.dark textarea, html.dark select {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: #ffffff !important;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8 max-w-4xl mx-auto pb-24">
 
-    <!-- tela de bloqueio / loading -->
-    <div id="auth-check-screen" class="fixed inset-0 z-[1000] bg-background-dark flex flex-col items-center justify-center p-6 text-center">
+    <div id="auth-check-screen" class="fixed inset-0 z-[1000] bg-background-light dark:bg-background-dark flex flex-col items-center justify-center p-6 text-center">
         <div id="auth-loading" class="flex flex-col items-center gap-4">
             <div class="size-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
             <p class="text-xs font-bold uppercase tracking-widest text-gray-500">Verificando Credenciais...</p>
@@ -54,58 +76,59 @@
             <span class="material-symbols-outlined text-primary text-6xl">lock</span>
             <h2 class="text-2xl font-bold italic uppercase">Acesso Restrito</h2>
             <p class="text-gray-400 text-sm max-w-xs">Você precisa estar logado como administrador para acessar este painel.</p>
-            <a href="index.html" class="bg-white/5 border border-white/10 px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all">Voltar ao App</a>
+            <a href="index.html" class="bg-black/5 dark:bg-white/5 border dark:border-white/10 border-black/10 px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all">Voltar ao App</a>
         </div>
     </div>
 
-    <!-- conteúdo protegido -->
     <div id="admin-content">
         <header class="flex items-center justify-between mb-8">
             <div>
                 <h1 class="text-3xl font-black italic uppercase tracking-tight">Painel <span class="text-primary">Admin</span></h1>
                 <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mt-1">Cariominas FC • Gestão Digital</p>
             </div>
-            <div class="text-[10px] bg-white/5 px-3 py-1 rounded-full border border-white/10 text-gray-400 uppercase font-black tracking-widest">Admin Mode</div>
+            <div class="flex items-center gap-3">
+                <button onclick="toggleTheme()" class="size-11 rounded-2xl glass-panel flex items-center justify-center transition-all active:scale-90 shadow-sm">
+                    <span id="theme-icon" class="material-symbols-outlined text-[20px]">dark_mode</span>
+                </button>
+                <div class="text-[10px] bg-primary/10 px-3 py-1 rounded-full border border-primary/20 text-primary uppercase font-black tracking-widest">Admin Mode</div>
+            </div>
         </header>
 
-        <!-- Navegação por Abas -->
-        <nav class="flex gap-8 border-b border-white/5 mb-8 overflow-x-auto no-scrollbar">
+        <nav class="flex gap-8 border-b dark:border-white/5 border-black/5 mb-8 overflow-x-auto no-scrollbar">
             <button onclick="switchTab('postar')" id="btn-postar" class="tab-btn pb-4 text-sm font-bold uppercase tracking-widest tab-active">Criar Conteúdo</button>
             <button onclick="switchTab('gerenciar-noticias')" id="btn-gerenciar-noticias" class="tab-btn pb-4 text-sm font-bold uppercase tracking-widest text-gray-500">Notícias</button>
             <button onclick="switchTab('gerenciar-eventos')" id="btn-gerenciar-eventos" class="tab-btn pb-4 text-sm font-bold uppercase tracking-widest text-gray-500">Agenda</button>
         </nav>
 
-        <!-- ABA: POSTAR -->
         <div id="tab-postar" class="tab-content space-y-8">
-            <section class="bg-surface-dark/40 p-6 rounded-3xl border border-white/5 glass-panel shadow-2xl">
+            <section class="p-6 rounded-3xl shadow-2xl glass-panel">
                 <h2 class="text-xl font-bold mb-6 flex items-center gap-3"><span class="material-symbols-outlined text-primary">feed</span> Nova Notícia</h2>
                 <form id="newsForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="text" id="newsTitle" placeholder="Título da Notícia" class="md:col-span-2 bg-black/40 border-white/10 rounded-2xl text-white placeholder-gray-600 focus:border-primary focus:ring-primary py-4 px-5" required>
-                    <input type="url" id="newsImage" placeholder="URL da Capa (Ex: https://...)" class="bg-black/40 border-white/10 rounded-2xl text-white placeholder-gray-600 focus:border-primary focus:ring-primary py-4 px-5" required>
-                    <input type="text" id="newsDate" placeholder="Data Exibição (Ex: 12 Jan)" class="bg-black/40 border-white/10 rounded-2xl text-white placeholder-gray-600 focus:border-primary focus:ring-primary py-4 px-5" required>
-                    <textarea id="newsBody" placeholder="Corpo da notícia..." class="md:col-span-2 bg-black/40 border-white/10 rounded-2xl text-white placeholder-gray-600 focus:border-primary focus:ring-primary py-4 px-5" rows="3"></textarea>
+                    <input type="text" id="newsTitle" placeholder="Título da Notícia" class="md:col-span-2 py-4 px-5" required>
+                    <input type="url" id="newsImage" placeholder="URL da Capa (Ex: https://...)" class="py-4 px-5" required>
+                    <input type="text" id="newsDate" placeholder="Data Exibição (Ex: 12 Jan)" class="py-4 px-5" required>
+                    <textarea id="newsBody" placeholder="Corpo da notícia..." class="md:col-span-2 py-4 px-5" rows="3"></textarea>
                     <button type="submit" class="md:col-span-2 bg-primary hover:brightness-110 active:scale-[0.98] transition-all text-white font-black uppercase tracking-widest py-4 rounded-2xl shadow-xl shadow-primary/20">Publicar Notícia</button>
                 </form>
             </section>
 
-            <section class="bg-surface-dark/40 p-6 rounded-3xl border border-white/5 glass-panel shadow-2xl">
+            <section class="p-6 rounded-3xl shadow-2xl glass-panel">
                 <h2 class="text-xl font-bold mb-6 flex items-center gap-3"><span class="material-symbols-outlined text-primary">calendar_month</span> Novo Evento</h2>
                 <form id="eventForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="text" id="eventTitle" placeholder="Título (Ex: Treino Tático)" class="md:col-span-2 bg-black/40 border-white/10 rounded-2xl text-white placeholder-gray-600 focus:border-primary focus:ring-primary py-4 px-5" required>
-                    <select id="eventType" class="bg-black/40 border-white/10 rounded-2xl text-white focus:border-primary focus:ring-primary py-4 px-5">
+                    <input type="text" id="eventTitle" placeholder="Título (Ex: Treino Tático)" class="md:col-span-2 py-4 px-5" required>
+                    <select id="eventType" class="py-4 px-5">
                         <option value="Treino">Treino</option>
                         <option value="Jogo">Jogo</option>
                         <option value="Torneio">Torneio</option>
                     </select>
-                    <input type="text" id="eventDate" placeholder="Data (Ex: 15 Jan)" class="bg-black/40 border-white/10 rounded-2xl text-white placeholder-gray-600 focus:border-primary focus:ring-primary py-4 px-5" required>
-                    <input type="text" id="eventLocation" placeholder="Local (Ex: CT Cariominas)" class="bg-black/40 border-white/10 rounded-2xl text-white placeholder-gray-600 focus:border-primary focus:ring-primary py-4 px-5" required>
-                    <input type="time" id="eventTime" class="bg-black/40 border-white/10 rounded-2xl text-white focus:border-primary focus:ring-primary py-4 px-5" required>
+                    <input type="text" id="eventDate" placeholder="Data (Ex: 15 Jan)" class="py-4 px-5" required>
+                    <input type="text" id="eventLocation" placeholder="Local (Ex: CT Cariominas)" class="py-4 px-5" required>
+                    <input type="time" id="eventTime" class="py-4 px-5" required>
                     <button type="submit" class="md:col-span-2 bg-primary hover:brightness-110 active:scale-[0.98] transition-all text-white font-black uppercase tracking-widest py-4 rounded-2xl shadow-xl shadow-primary/20">Agendar Evento</button>
                 </form>
             </section>
         </div>
 
-        <!-- ABA: GERENCIAR NOTÍCIAS -->
         <div id="tab-gerenciar-noticias" class="tab-content hidden space-y-4">
             <h2 class="text-xl font-bold mb-6 px-1 italic">Mural Atual</h2>
             <div id="news-list" class="grid grid-cols-1 gap-4">
@@ -113,7 +136,6 @@
             </div>
         </div>
 
-        <!-- ABA: GERENCIAR EVENTOS -->
         <div id="tab-gerenciar-eventos" class="tab-content hidden space-y-4">
             <h2 class="text-xl font-bold mb-6 px-1 italic">Agenda do Clube</h2>
             <div id="events-list" class="grid grid-cols-1 gap-4">
@@ -127,7 +149,6 @@
         import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Fallback pra config caso não venha do ambiente
         const configReal = {
             apiKey: "AIzaSyBAyhAtApmZ9oYi6fu_cX_H25WYXk513HI",
             authDomain: "cariominasapp.firebaseapp.com",
@@ -144,7 +165,26 @@
         const db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'cariominasapp';
 
-        // trava de segurança no carregamento
+        // Alternar tema e persistir
+        window.toggleTheme = () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeIcon();
+        };
+
+        function updateThemeIcon() {
+            const icon = document.getElementById('theme-icon');
+            if (icon) icon.innerText = document.documentElement.classList.contains('dark') ? 'light_mode' : 'dark_mode';
+        }
+
+        // Aplica tema salvo no carregamento
+        if (localStorage.theme === 'light') {
+            document.documentElement.classList.remove('dark');
+        } else {
+            document.documentElement.classList.add('dark');
+        }
+        updateThemeIcon();
+
         onAuthStateChanged(auth, (user) => {
             const screen = document.getElementById('auth-check-screen');
             const content = document.getElementById('admin-content');
@@ -152,11 +192,9 @@
             const denied = document.getElementById('auth-denied');
 
             if (user) {
-                // usuario logado, libera o painel
                 screen.style.display = 'none';
                 content.style.display = 'block';
             } else {
-                // se não tiver auth token, tenta sign in silencioso ou chuta
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     signInWithCustomToken(auth, __initial_auth_token).catch(() => {
                         loading.style.display = 'none';
@@ -169,7 +207,6 @@
             }
         });
 
-        // Switch de Abas
         window.switchTab = (tabId) => {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active', 'text-primary'));
@@ -180,7 +217,6 @@
             document.getElementById(`btn-${tabId}`).classList.remove('text-gray-500');
         };
 
-        // --- GESTÃO DE NOTÍCIAS ---
         document.getElementById('newsForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const data = {
@@ -190,10 +226,9 @@
                 dataPostagem: document.getElementById('newsDate').value,
                 createdAt: new Date().getTime()
             };
-            
             try {
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'news'), data);
-                alert('Notícia publicada com sucesso!');
+                alert('Notícia publicada!');
                 e.target.reset();
             } catch (error) { alert('Erro: ' + error.message); }
         });
@@ -201,17 +236,17 @@
         onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'news'), orderBy('createdAt', 'desc')), (snap) => {
             const container = document.getElementById('news-list');
             if (snap.empty) {
-                container.innerHTML = '<div class="p-12 text-center text-gray-600 border border-dashed border-white/5 rounded-3xl">Nenhuma notícia encontrada.</div>';
+                container.innerHTML = '<div class="p-12 text-center opacity-40 border border-dashed rounded-3xl">Vazio</div>';
                 return;
             }
             container.innerHTML = snap.docs.map(d => {
                 const item = d.data();
                 return `
-                <div class="flex gap-4 p-4 rounded-3xl bg-surface-dark/40 border border-white/5 items-center glass-panel">
-                    <img src="${item.capa}" class="size-16 rounded-xl object-cover bg-black/20" onerror="this.src='https://via.placeholder.com/150'">
+                <div class="flex gap-4 p-4 rounded-3xl border border-black/5 dark:border-white/5 items-center glass-panel">
+                    <img src="${item.capa}" class="size-16 rounded-xl object-cover bg-black/10">
                     <div class="flex-1 min-w-0">
-                        <h4 class="font-bold text-sm truncate text-white/90">${item.titulo}</h4>
-                        <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest">${item.dataPostagem}</p>
+                        <h4 class="font-bold text-sm truncate">${item.titulo}</h4>
+                        <p class="text-[10px] opacity-40 uppercase font-black tracking-widest">${item.dataPostagem}</p>
                     </div>
                     <button onclick="deleteDocById('news', '${d.id}')" class="size-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all active:scale-90">
                         <span class="material-symbols-outlined text-sm">delete</span>
@@ -220,7 +255,6 @@
             }).join('');
         });
 
-        // --- GESTÃO DE EVENTOS ---
         document.getElementById('eventForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const data = {
@@ -231,7 +265,6 @@
                 dataExtenso: document.getElementById('eventDate').value,
                 createdAt: new Date().getTime()
             };
-
             try {
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'events'), data);
                 alert('Evento agendado!');
@@ -242,21 +275,21 @@
         onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'events'), orderBy('createdAt', 'desc')), (snap) => {
             const container = document.getElementById('events-list');
             if (snap.empty) {
-                container.innerHTML = '<div class="p-12 text-center text-gray-600 border border-dashed border-white/5 rounded-3xl">Nenhum evento na agenda.</div>';
+                container.innerHTML = '<div class="p-12 text-center opacity-40 border border-dashed rounded-3xl">Vazio</div>';
                 return;
             }
             container.innerHTML = snap.docs.map(d => {
                 const item = d.data();
                 const isGame = item.type === 'Jogo';
                 return `
-                <div class="p-5 rounded-3xl bg-surface-dark/40 border border-white/5 glass-panel flex justify-between items-center">
+                <div class="p-5 rounded-3xl border border-black/5 dark:border-white/5 glass-panel flex justify-between items-center">
                     <div class="flex gap-4 items-center">
                         <div class="size-10 rounded-full ${isGame ? 'bg-orange-500/20 text-orange-500' : 'bg-primary/20 text-primary'} flex items-center justify-center">
                             <span class="material-symbols-outlined text-sm">${isGame ? 'sports_soccer' : 'fitness_center'}</span>
                         </div>
                         <div>
-                            <h4 class="font-bold text-white/90 leading-tight">${item.titulo}</h4>
-                            <p class="text-[10px] text-gray-500 uppercase font-black">${item.dataExtenso} • ${item.hora}</p>
+                            <h4 class="font-bold leading-tight">${item.titulo}</h4>
+                            <p class="text-[10px] opacity-40 uppercase font-black">${item.dataExtenso} • ${item.hora}</p>
                         </div>
                     </div>
                     <button onclick="deleteDocById('events', '${d.id}')" class="size-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all active:scale-90">
@@ -267,10 +300,10 @@
         });
 
         window.deleteDocById = async (col, id) => {
-            if (!confirm('Tem certeza que deseja apagar este item?')) return;
+            if (!confirm('Apagar item?')) return;
             try {
                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', col, id));
-            } catch (err) { alert('Erro ao apagar: ' + err.message); }
+            } catch (err) { alert('Erro: ' + err.message); }
         };
 
     </script>
