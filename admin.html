@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html class="dark" lang="pt-BR">
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
@@ -24,45 +24,15 @@
         }
     </script>
     <style>
-        body { 
-            /* Transição suave de cor de fundo */
-            background-color: #f2f2f7; 
-            color: #1c1c1e; 
-            font-family: 'Lexend', sans-serif; 
-            transition: background-color 0.4s ease, color 0.4s ease;
-            -webkit-tap-highlight-color: transparent;
-        }
+        body { background-color: #f2f2f7; color: #1c1c1e; font-family: 'Lexend', sans-serif; transition: background-color 0.4s ease; }
         html.dark body { background-color: #1c1c1e; color: #ffffff; }
-
-        /* Glass panel adaptativo estilo iOS */
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(14px);
-            border: 1px solid rgba(0, 0, 0, 0.05);
-        }
-        html.dark .glass-panel {
-            background: rgba(44, 44, 46, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(14px); border: 1px solid rgba(0, 0, 0, 0.05); }
+        html.dark .glass-panel { background: rgba(44, 44, 46, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); }
         .tab-active { color: #ec131e; border-bottom: 2.5px solid #ec131e; }
-        
+        input, textarea, select { background-color: rgba(0, 0, 0, 0.04) !important; border: 1px solid rgba(0, 0, 0, 0.08) !important; border-radius: 14px !important; color: #1c1c1e !important; }
+        html.dark input, html.dark textarea, html.dark select { background-color: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: #ffffff !important; }
         #admin-content { display: none; }
         #auth-check-screen { display: flex; }
-
-        /* Inputs adaptativos */
-        input, textarea, select {
-            background-color: rgba(0, 0, 0, 0.04) !important;
-            border: 1px solid rgba(0, 0, 0, 0.08) !important;
-            border-radius: 14px !important;
-            color: #1c1c1e !important;
-        }
-        html.dark input, html.dark textarea, html.dark select {
-            background-color: rgba(255, 255, 255, 0.05) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            color: #ffffff !important;
-        }
     </style>
 </head>
 <body class="p-4 md:p-8 max-w-4xl mx-auto pb-24">
@@ -70,13 +40,35 @@
     <div id="auth-check-screen" class="fixed inset-0 z-[1000] bg-background-light dark:bg-background-dark flex flex-col items-center justify-center p-6 text-center">
         <div id="auth-loading" class="flex flex-col items-center gap-4">
             <div class="size-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-            <p class="text-xs font-bold uppercase tracking-widest text-gray-500">Verificando Credenciais...</p>
+            <p class="text-xs font-bold uppercase tracking-widest text-gray-500">Autenticando...</p>
         </div>
-        <div id="auth-denied" class="hidden flex-col items-center gap-6 animate-in">
+        <div id="auth-denied" class="hidden flex-col items-center gap-6">
             <span class="material-symbols-outlined text-primary text-6xl">lock</span>
             <h2 class="text-2xl font-bold italic uppercase">Acesso Restrito</h2>
-            <p class="text-gray-400 text-sm max-w-xs">Você precisa estar logado como administrador para acessar este painel.</p>
-            <a href="index.html" class="bg-black/5 dark:bg-white/5 border dark:border-white/10 border-black/10 px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all">Voltar ao App</a>
+            <a href="index.html" class="bg-primary text-white px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-widest">Sair</a>
+        </div>
+    </div>
+
+    <div id="edit-modal" class="fixed inset-0 z-[1100] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeEditModal()"></div>
+        <div class="relative w-full max-w-md glass-panel rounded-[2.5rem] p-8 shadow-2xl animate-in">
+            <h2 class="text-xl font-bold mb-6 dark:text-white text-black">Editar Atleta</h2>
+            <form id="editUserForm" class="space-y-4">
+                <input type="hidden" id="edit-uid">
+                <input type="text" id="edit-nome" placeholder="Nome" class="w-full py-4 px-5">
+                <div class="grid grid-cols-2 gap-4">
+                    <select id="edit-posicao" class="w-full py-4 px-5">
+                        <option value="GOL">Goleiro</option><option value="ZAG">Zagueiro</option><option value="VOL">Volante</option><option value="MEI">Meia</option><option value="ATA">Atacante</option>
+                    </select>
+                    <select id="edit-categoria" class="w-full py-4 px-5">
+                        <option value="Sub-13">Sub-13</option><option value="Sub-15">Sub-15</option><option value="Sub-17">Sub-17</option><option value="Profissional">Profissional</option>
+                    </select>
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeEditModal()" class="flex-1 py-4 rounded-2xl font-bold dark:text-white/40 text-black/40 uppercase text-[10px] tracking-widest">Cancelar</button>
+                    <button type="submit" class="flex-1 bg-primary text-white py-4 rounded-2xl font-bold uppercase text-[10px] tracking-widest shadow-lg shadow-primary/20">Salvar</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -86,68 +78,74 @@
                 <h1 class="text-3xl font-black italic uppercase tracking-tight">Painel <span class="text-primary">Admin</span></h1>
                 <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mt-1">Cariominas FC • Gestão Digital</p>
             </div>
-            <div class="flex items-center gap-3">
-                <button onclick="toggleTheme()" class="size-11 rounded-2xl glass-panel flex items-center justify-center transition-all active:scale-90 shadow-sm">
-                    <span id="theme-icon" class="material-symbols-outlined text-[20px]">dark_mode</span>
-                </button>
-                <div class="text-[10px] bg-primary/10 px-3 py-1 rounded-full border border-primary/20 text-primary uppercase font-black tracking-widest">Admin Mode</div>
-            </div>
+            <button onclick="toggleTheme()" class="size-11 rounded-2xl glass-panel flex items-center justify-center shadow-sm">
+                <span id="theme-icon" class="material-symbols-outlined text-[20px]">dark_mode</span>
+            </button>
         </header>
 
         <nav class="flex gap-8 border-b dark:border-white/5 border-black/5 mb-8 overflow-x-auto no-scrollbar">
-            <button onclick="switchTab('postar')" id="btn-postar" class="tab-btn pb-4 text-sm font-bold uppercase tracking-widest tab-active">Criar Conteúdo</button>
-            <button onclick="switchTab('gerenciar-noticias')" id="btn-gerenciar-noticias" class="tab-btn pb-4 text-sm font-bold uppercase tracking-widest text-gray-500">Notícias</button>
-            <button onclick="switchTab('gerenciar-eventos')" id="btn-gerenciar-eventos" class="tab-btn pb-4 text-sm font-bold uppercase tracking-widest text-gray-500">Agenda</button>
+            <button onclick="switchTab('postar')" id="btn-postar" class="tab-btn pb-4 text-xs font-bold uppercase tracking-widest tab-active">Criar</button>
+            <button onclick="switchTab('gerenciar-noticias')" id="btn-gerenciar-noticias" class="tab-btn pb-4 text-xs font-bold uppercase tracking-widest text-gray-500">Notícias</button>
+            <button onclick="switchTab('gerenciar-eventos')" id="btn-gerenciar-eventos" class="tab-btn pb-4 text-xs font-bold uppercase tracking-widest text-gray-500">Agenda</button>
+            <button onclick="switchTab('usuarios')" id="btn-usuarios" class="tab-btn pb-4 text-xs font-bold uppercase tracking-widest text-gray-500">Usuários</button>
         </nav>
 
         <div id="tab-postar" class="tab-content space-y-8">
-            <section class="p-6 rounded-3xl shadow-2xl glass-panel">
+            <section class="p-6 rounded-3xl glass-panel shadow-2xl">
                 <h2 class="text-xl font-bold mb-6 flex items-center gap-3"><span class="material-symbols-outlined text-primary">feed</span> Nova Notícia</h2>
                 <form id="newsForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="text" id="newsTitle" placeholder="Título da Notícia" class="md:col-span-2 py-4 px-5" required>
-                    <input type="url" id="newsImage" placeholder="URL da Capa (Ex: https://...)" class="py-4 px-5" required>
-                    <input type="text" id="newsDate" placeholder="Data Exibição (Ex: 12 Jan)" class="py-4 px-5" required>
+                    <input type="text" id="newsTitle" placeholder="Título" class="md:col-span-2 py-4 px-5" required>
+                    <input type="url" id="newsImage" placeholder="URL Capa" class="py-4 px-5" required>
+                    <input type="text" id="newsDate" placeholder="Data (Ex: 12 Jan)" class="py-4 px-5" required>
                     <textarea id="newsBody" placeholder="Corpo da notícia..." class="md:col-span-2 py-4 px-5" rows="3"></textarea>
-                    <button type="submit" class="md:col-span-2 bg-primary hover:brightness-110 active:scale-[0.98] transition-all text-white font-black uppercase tracking-widest py-4 rounded-2xl shadow-xl shadow-primary/20">Publicar Notícia</button>
+                    <button type="submit" class="md:col-span-2 bg-primary text-white font-black uppercase tracking-widest py-4 rounded-2xl shadow-xl shadow-primary/20">Publicar</button>
                 </form>
             </section>
 
-            <section class="p-6 rounded-3xl shadow-2xl glass-panel">
+            <section class="p-6 rounded-3xl glass-panel shadow-2xl">
                 <h2 class="text-xl font-bold mb-6 flex items-center gap-3"><span class="material-symbols-outlined text-primary">calendar_month</span> Novo Evento</h2>
                 <form id="eventForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="text" id="eventTitle" placeholder="Título (Ex: Treino Tático)" class="md:col-span-2 py-4 px-5" required>
+                    <input type="text" id="eventTitle" placeholder="Título" class="md:col-span-2 py-4 px-5" required>
                     <select id="eventType" class="py-4 px-5">
-                        <option value="Treino">Treino</option>
-                        <option value="Jogo">Jogo</option>
-                        <option value="Torneio">Torneio</option>
+                        <option value="Treino">Treino</option><option value="Jogo">Jogo</option><option value="Torneio">Torneio</option>
                     </select>
                     <input type="text" id="eventDate" placeholder="Data (Ex: 15 Jan)" class="py-4 px-5" required>
-                    <input type="text" id="eventLocation" placeholder="Local (Ex: CT Cariominas)" class="py-4 px-5" required>
+                    <input type="text" id="eventLocation" placeholder="Local" class="py-4 px-5" required>
                     <input type="time" id="eventTime" class="py-4 px-5" required>
-                    <button type="submit" class="md:col-span-2 bg-primary hover:brightness-110 active:scale-[0.98] transition-all text-white font-black uppercase tracking-widest py-4 rounded-2xl shadow-xl shadow-primary/20">Agendar Evento</button>
+                    <button type="submit" class="md:col-span-2 bg-primary text-white font-black uppercase tracking-widest py-4 rounded-2xl shadow-xl shadow-primary/20">Agendar</button>
                 </form>
             </section>
+        </div>
+
+        <div id="tab-usuarios" class="tab-content hidden space-y-6">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1 relative">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 opacity-30">search</span>
+                    <input type="text" id="user-search" placeholder="Buscar atleta pelo nome..." class="w-full pl-12 py-4 px-5" oninput="filterUsers()">
+                </div>
+                <select id="filter-categoria" class="py-4 px-5 min-w-[160px]" onchange="filterUsers()">
+                    <option value="">Todas Categorias</option>
+                    <option value="Sub-13">Sub-13</option><option value="Sub-15">Sub-15</option><option value="Sub-17">Sub-17</option><option value="Profissional">Profissional</option>
+                </select>
+            </div>
+            <div id="users-list" class="grid grid-cols-1 gap-4">
+                <p class="text-center py-10 opacity-40">Carregando atletas...</p>
+            </div>
         </div>
 
         <div id="tab-gerenciar-noticias" class="tab-content hidden space-y-4">
-            <h2 class="text-xl font-bold mb-6 px-1 italic">Mural Atual</h2>
-            <div id="news-list" class="grid grid-cols-1 gap-4">
-                <p class="text-gray-500 italic p-8 text-center">Carregando notícias...</p>
-            </div>
+            <div id="news-list" class="grid grid-cols-1 gap-4"></div>
         </div>
 
         <div id="tab-gerenciar-eventos" class="tab-content hidden space-y-4">
-            <h2 class="text-xl font-bold mb-6 px-1 italic">Agenda do Clube</h2>
-            <div id="events-list" class="grid grid-cols-1 gap-4">
-                <p class="text-gray-500 italic p-8 text-center">Carregando eventos...</p>
-            </div>
+            <div id="events-list" class="grid grid-cols-1 gap-4"></div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, getDocs, collectionGroup, where, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const configReal = {
             apiKey: "AIzaSyBAyhAtApmZ9oYi6fu_cX_H25WYXk513HI",
@@ -155,8 +153,7 @@
             projectId: "cariominasapp",
             storageBucket: "cariominasapp.firebasestorage.app",
             messagingSenderId: "337748582700",
-            appId: "1:337748582700:web:8fa4c9ee92b6d02c374c89",
-            measurementId: "G-T5KEEF8YT4"
+            appId: "1:337748582700:web:8fa4c9ee92b6d02c374c89"
         };
 
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : configReal;
@@ -165,7 +162,8 @@
         const db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'cariominasapp';
 
-        // Alternar tema e persistir
+        let allUsers = [];
+
         window.toggleTheme = () => {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
@@ -177,134 +175,168 @@
             if (icon) icon.innerText = document.documentElement.classList.contains('dark') ? 'light_mode' : 'dark_mode';
         }
 
-        // Aplica tema salvo no carregamento
-        if (localStorage.theme === 'light') {
-            document.documentElement.classList.remove('dark');
-        } else {
-            document.documentElement.classList.add('dark');
-        }
-        updateThemeIcon();
-
         onAuthStateChanged(auth, (user) => {
-            const screen = document.getElementById('auth-check-screen');
-            const content = document.getElementById('admin-content');
-            const loading = document.getElementById('auth-loading');
-            const denied = document.getElementById('auth-denied');
-
             if (user) {
-                screen.style.display = 'none';
-                content.style.display = 'block';
+                document.getElementById('auth-check-screen').style.display = 'none';
+                document.getElementById('admin-content').style.display = 'block';
+                fetchUsers();
             } else {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    signInWithCustomToken(auth, __initial_auth_token).catch(() => {
-                        loading.style.display = 'none';
-                        denied.style.display = 'flex';
-                    });
-                } else {
-                    loading.style.display = 'none';
-                    denied.style.display = 'flex';
-                }
+                document.getElementById('auth-loading').style.display = 'none';
+                document.getElementById('auth-denied').classList.remove('hidden');
             }
         });
 
         window.switchTab = (tabId) => {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active', 'text-primary'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.add('text-gray-500'));
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('tab-active', 'text-primary');
+                b.classList.add('text-gray-500');
+            });
 
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
             document.getElementById(`btn-${tabId}`).classList.add('tab-active', 'text-primary');
             document.getElementById(`btn-${tabId}`).classList.remove('text-gray-500');
         };
 
-        document.getElementById('newsForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = {
-                titulo: document.getElementById('newsTitle').value,
-                capa: document.getElementById('newsImage').value,
-                resumo: document.getElementById('newsBody').value,
-                dataPostagem: document.getElementById('newsDate').value,
-                createdAt: new Date().getTime()
-            };
+        // --- GESTÃO DE USUÁRIOS ---
+        async function fetchUsers() {
+            // Buscando atletas via Collection Group (requer índice no Firebase)
             try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'news'), data);
-                alert('Notícia publicada!');
-                e.target.reset();
-            } catch (error) { alert('Erro: ' + error.message); }
-        });
+                const q = query(collectionGroup(db, 'settings'), where('overall', '>=', 0));
+                const snap = await getDocs(q);
+                allUsers = snap.docs.map(d => {
+                    const pathParts = d.ref.path.split('/');
+                    const uid = pathParts[4]; // artifacts/ID/users/UID/settings/profile
+                    return { uid, ...d.data() };
+                });
+                renderUsers(allUsers);
+            } catch (err) {
+                console.error("Erro ao buscar usuários:", err);
+                document.getElementById('users-list').innerHTML = `<p class='text-center opacity-40 text-xs'>Erro: Verifique se o índice de subcoleção foi criado no Firestore.</p>`;
+            }
+        }
 
-        onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'news'), orderBy('createdAt', 'desc')), (snap) => {
-            const container = document.getElementById('news-list');
-            if (snap.empty) {
-                container.innerHTML = '<div class="p-12 text-center opacity-40 border border-dashed rounded-3xl">Vazio</div>';
+        function renderUsers(users) {
+            const container = document.getElementById('users-list');
+            if (users.length === 0) {
+                container.innerHTML = '<p class="text-center py-10 opacity-30 text-xs uppercase font-bold tracking-widest">Nenhum atleta encontrado</p>';
                 return;
             }
-            container.innerHTML = snap.docs.map(d => {
-                const item = d.data();
-                return `
-                <div class="flex gap-4 p-4 rounded-3xl border border-black/5 dark:border-white/5 items-center glass-panel">
-                    <img src="${item.capa}" class="size-16 rounded-xl object-cover bg-black/10">
-                    <div class="flex-1 min-w-0">
-                        <h4 class="font-bold text-sm truncate">${item.titulo}</h4>
-                        <p class="text-[10px] opacity-40 uppercase font-black tracking-widest">${item.dataPostagem}</p>
+            container.innerHTML = users.map(u => `
+                <div class="p-5 rounded-3xl glass-panel flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex items-center gap-4 w-full">
+                        <div class="size-12 rounded-full overflow-hidden bg-black/10 shrink-0 border border-white/10">
+                            ${u.foto ? `<img src="${u.foto}" class="w-full h-full object-cover">` : `<span class="material-symbols-outlined flex items-center justify-center h-full opacity-20">person</span>`}
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <h4 class="font-bold truncate text-sm">${u.nome || 'Sem nome'}</h4>
+                            <div class="flex gap-2 mt-1">
+                                <span class="text-[9px] font-black uppercase text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/10">${u.posicao || '-'}</span>
+                                <span class="text-[9px] font-black uppercase opacity-40 bg-black/5 dark:bg-white/5 px-2 py-0.5 rounded border border-black/5 dark:border-white/5">${u.categoria || '-'}</span>
+                            </div>
+                        </div>
                     </div>
-                    <button onclick="deleteDocById('news', '${d.id}')" class="size-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all active:scale-90">
-                        <span class="material-symbols-outlined text-sm">delete</span>
-                    </button>
-                </div>`;
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <button onclick="openEditModal('${u.uid}')" class="flex-1 md:flex-none size-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center active:scale-90 transition-transform"><span class="material-symbols-outlined text-sm">edit</span></button>
+                        <button onclick="deleteUser('${u.uid}')" class="flex-1 md:flex-none size-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center active:scale-90 transition-transform"><span class="material-symbols-outlined text-sm">delete</span></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.filterUsers = () => {
+            const term = document.getElementById('user-search').value.toLowerCase();
+            const cat = document.getElementById('filter-categoria').value;
+            const filtered = allUsers.filter(u => {
+                const matchName = (u.nome || '').toLowerCase().includes(term);
+                const matchCat = cat === '' || u.categoria === cat;
+                return matchName && matchCat;
+            });
+            renderUsers(filtered);
+        };
+
+        window.openEditModal = (uid) => {
+            const u = allUsers.find(x => x.uid === uid);
+            if (!u) return;
+            document.getElementById('edit-uid').value = uid;
+            document.getElementById('edit-nome').value = u.nome || '';
+            document.getElementById('edit-posicao').value = u.posicao || 'ATA';
+            document.getElementById('edit-categoria').value = u.categoria || 'Sub-13';
+            
+            const modal = document.getElementById('edit-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        };
+
+        window.closeEditModal = () => document.getElementById('edit-modal').classList.add('hidden');
+
+        document.getElementById('editUserForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const uid = document.getElementById('edit-uid').value;
+            const data = {
+                nome: document.getElementById('edit-nome').value,
+                posicao: document.getElementById('edit-posicao').value,
+                categoria: document.getElementById('edit-categoria').value
+            };
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'users', uid, 'settings', 'profile'), data, { merge: true });
+                alert('Dados atualizados!');
+                closeEditModal();
+                fetchUsers();
+            } catch (err) { alert('Erro ao salvar: ' + err.message); }
+        };
+
+        window.deleteUser = async (uid) => {
+            if (!confirm('ATENÇÃO: Isso apagará os dados do atleta (Perfil, Pagamentos, etc). A conta de login deve ser removida manualmente no console do Firebase Authentication. Continuar?')) return;
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'users', uid, 'settings', 'profile'));
+                alert('Dados do perfil removidos.');
+                fetchUsers();
+            } catch (err) { alert('Erro: ' + err.message); }
+        };
+
+        // --- GESTÃO DE NOTÍCIAS E EVENTOS (RESTAURADOS) ---
+        document.getElementById('newsForm').onsubmit = async (e) => {
+            e.preventDefault();
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'news'), {
+                titulo: document.getElementById('newsTitle').value, capa: document.getElementById('newsImage').value,
+                resumo: document.getElementById('newsBody').value, dataPostagem: document.getElementById('newsDate').value,
+                createdAt: new Date().getTime()
+            });
+            alert('Sucesso!'); e.target.reset();
+        };
+
+        onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'news'), orderBy('createdAt', 'desc')), (snap) => {
+            document.getElementById('news-list').innerHTML = snap.docs.map(d => {
+                const item = d.data();
+                return `<div class="p-4 rounded-3xl glass-panel flex justify-between items-center"><div class="flex items-center gap-4"><img src="${item.capa}" class="size-12 rounded-xl object-cover"><h4 class="font-bold text-sm truncate">${item.titulo}</h4></div><button onclick="deleteDocById('news', '${d.id}')" class="text-primary material-symbols-outlined">delete</button></div>`;
             }).join('');
         });
 
-        document.getElementById('eventForm').addEventListener('submit', async (e) => {
+        document.getElementById('eventForm').onsubmit = async (e) => {
             e.preventDefault();
-            const data = {
-                titulo: document.getElementById('eventTitle').value,
-                type: document.getElementById('eventType').value,
-                local: document.getElementById('eventLocation').value,
-                hora: document.getElementById('eventTime').value,
-                dataExtenso: document.getElementById('eventDate').value,
-                createdAt: new Date().getTime()
-            };
-            try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'events'), data);
-                alert('Evento agendado!');
-                e.target.reset();
-            } catch (error) { alert('Erro: ' + error.message); }
-        });
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'events'), {
+                titulo: document.getElementById('eventTitle').value, type: document.getElementById('eventType').value,
+                local: document.getElementById('eventLocation').value, hora: document.getElementById('eventTime').value,
+                dataExtenso: document.getElementById('eventDate').value, createdAt: new Date().getTime()
+            });
+            alert('Evento agendado!'); e.target.reset();
+        };
 
         onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'events'), orderBy('createdAt', 'desc')), (snap) => {
-            const container = document.getElementById('events-list');
-            if (snap.empty) {
-                container.innerHTML = '<div class="p-12 text-center opacity-40 border border-dashed rounded-3xl">Vazio</div>';
-                return;
-            }
-            container.innerHTML = snap.docs.map(d => {
+            document.getElementById('events-list').innerHTML = snap.docs.map(d => {
                 const item = d.data();
-                const isGame = item.type === 'Jogo';
-                return `
-                <div class="p-5 rounded-3xl border border-black/5 dark:border-white/5 glass-panel flex justify-between items-center">
-                    <div class="flex gap-4 items-center">
-                        <div class="size-10 rounded-full ${isGame ? 'bg-orange-500/20 text-orange-500' : 'bg-primary/20 text-primary'} flex items-center justify-center">
-                            <span class="material-symbols-outlined text-sm">${isGame ? 'sports_soccer' : 'fitness_center'}</span>
-                        </div>
-                        <div>
-                            <h4 class="font-bold leading-tight">${item.titulo}</h4>
-                            <p class="text-[10px] opacity-40 uppercase font-black">${item.dataExtenso} • ${item.hora}</p>
-                        </div>
-                    </div>
-                    <button onclick="deleteDocById('events', '${d.id}')" class="size-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all active:scale-90">
-                        <span class="material-symbols-outlined text-sm">delete</span>
-                    </button>
-                </div>`;
+                return `<div class="p-4 rounded-3xl glass-panel flex justify-between items-center"><div><h4 class="font-bold text-sm">${item.titulo}</h4><p class="text-[10px] opacity-40 uppercase">${item.dataExtenso} • ${item.hora}</p></div><button onclick="deleteDocById('events', '${d.id}')" class="text-primary material-symbols-outlined">delete</button></div>`;
             }).join('');
         });
 
         window.deleteDocById = async (col, id) => {
-            if (!confirm('Apagar item?')) return;
-            try {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', col, id));
-            } catch (err) { alert('Erro: ' + err.message); }
+            if (confirm('Apagar?')) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', col, id));
         };
+
+        // Aplica tema salvo no carregamento
+        if (localStorage.theme === 'light') document.documentElement.classList.remove('dark');
+        updateThemeIcon();
 
     </script>
 </body>
