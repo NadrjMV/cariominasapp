@@ -15,6 +15,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <script>
         tailwind.config = {
             darkMode: "class",
@@ -41,58 +43,28 @@
     </script>
 
     <style>
-        body {
-            min-height: 100dvh;
-            background-color: #f2f2f7;
-            color: #1c1c1e;
-            font-family: 'Lexend', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-            transition: background-color 0.4s ease, color 0.4s ease;
-        }
-
+        body { min-height: 100dvh; background-color: #f2f2f7; color: #1c1c1e; font-family: 'Lexend', sans-serif; -webkit-tap-highlight-color: transparent; transition: background-color 0.4s ease, color 0.4s ease; }
         html.dark body { background-color: #1c1c1e; color: #f2f2f7; }
-
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(0, 0, 0, 0.08);
-        }
-
-        html.dark .glass-panel {
-            background: rgba(44, 44, 46, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-        }
-
-        .metallic-sheen {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.15) 100%);
-            box-shadow: inset 0 0 0 1px rgba(255, 215, 0, 0.2);
-        }
-
-        .loader-screen {
-            position: fixed; inset: 0; background: #1c1c1e; z-index: 1000;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-        }
-
+        .glass-panel { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(0, 0, 0, 0.08); }
+        html.dark .glass-panel { background: rgba(44, 44, 46, 0.7); border: 1px solid rgba(255, 255, 255, 0.12); }
+        .metallic-sheen { background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.15) 100%); box-shadow: inset 0 0 0 1px rgba(255, 215, 0, 0.2); }
+        .loader-screen { position: fixed; inset: 0; background: #1c1c1e; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .nav-active { color: #ec131e !important; }
         .nav-active span { font-variation-settings: 'FILL' 1; }
-
         .no-scrollbar::-webkit-scrollbar { display: none; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-in { animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        input, select { background-color: rgba(0, 0, 0, 0.04) !important; border: 1px solid rgba(0, 0, 0, 0.08) !important; border-radius: 14px !important; color: #1c1c1e !important; }
+        html.dark input, html.dark select { background-color: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: #ffffff !important; }
 
-        input, select {
-            background-color: rgba(0, 0, 0, 0.04) !important;
-            border: 1px solid rgba(0, 0, 0, 0.08) !important;
-            border-radius: 14px !important;
-            color: #1c1c1e !important;
-        }
+        #elite-card-container { transition: transform 0.1s ease-out; perspective: 1000px; }
+        .holographic-overlay { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.3s; background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.05) 55%, transparent 60%); z-index: 25; }
+        #elite-card-container:hover .holographic-overlay { opacity: 1; }
 
-        html.dark input, html.dark select {
-            background-color: rgba(255, 255, 255, 0.05) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            color: #ffffff !important;
-        }
+        /* Modal customizado simples */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 500; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .modal-card { width: 100%; max-width: 360px; background: white; border-radius: 2rem; padding: 2rem; }
+        html.dark .modal-card { background: #2c2c2e; border: 1px solid rgba(255,255,255,0.1); }
     </style>
 </head>
 <body>
@@ -100,6 +72,19 @@
     <div id="loading-screen" class="loader-screen">
         <div class="w-12 h-12 border-[3px] border-primary/20 border-t-primary rounded-full animate-spin"></div>
         <p class="mt-4 text-[9px] font-black uppercase tracking-[0.3em] text-primary">Cariominas FC</p>
+    </div>
+
+    <!-- Modal Editar Nome -->
+    <div id="edit-name-modal" class="modal-overlay">
+        <div class="modal-card animate-in">
+            <h3 class="text-xl font-black mb-4 dark:text-white text-black">Editar Nome</h3>
+            <p class="text-[10px] uppercase opacity-40 font-bold mb-4 tracking-widest">Ajuste como seu nome aparece no Card</p>
+            <input type="text" id="new-name-input" class="w-full mb-6 p-5" placeholder="Nome Completo">
+            <div class="flex gap-3">
+                <button onclick="closeEditName()" class="flex-1 py-4 text-xs font-bold uppercase opacity-40">Cancelar</button>
+                <button onclick="saveNewName()" class="flex-1 bg-primary text-white py-4 rounded-2xl text-xs font-black uppercase shadow-lg shadow-primary/20">Atualizar</button>
+            </div>
+        </div>
     </div>
 
     <div id="news-modal" class="fixed inset-0 z-[200] hidden flex-col justify-end">
@@ -134,7 +119,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, getDocs, collection, setDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const clubLogoUrl = "https://i.imgur.com/Jdq0NS5.png";
@@ -145,8 +130,7 @@
             projectId: "cariominasapp",
             storageBucket: "cariominasapp.firebasestorage.app",
             messagingSenderId: "337748582700",
-            appId: "1:337748582700:web:8fa4c9ee92b6d02c374c89",
-            measurementId: "G-T5KEEF8YT4"
+            appId: "1:337748582700:web:8fa4c9ee92b6d02c374c89"
         };
 
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : configReal;
@@ -185,6 +169,7 @@
                     container.innerHTML = html;
                     if (view === 'login') setupLoginEvents();
                     if (view === 'setupProfile') setupProfileEvents();
+                    if (view === 'card') setupCardInteractions();
                 } catch (err) { container.innerHTML = `<div class="p-12 text-center text-red-500/40 text-xs">Erro de carga.</div>`; }
             }
         };
@@ -207,6 +192,27 @@
         };
 
         window.closeNews = () => document.getElementById('news-modal').classList.add('hidden');
+
+        // --- Gestão de Nome ---
+        window.openEditName = () => {
+            document.getElementById('new-name-input').value = profileData?.nome || '';
+            document.getElementById('edit-name-modal').style.display = 'flex';
+        };
+
+        window.closeEditName = () => {
+            document.getElementById('edit-name-modal').style.display = 'none';
+        };
+
+        window.saveNewName = async () => {
+            const newName = document.getElementById('new-name-input').value;
+            if (!newName) return;
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'settings', 'profile'), { nome: newName }, { merge: true });
+                if (profileData) profileData.nome = newName;
+                closeEditName();
+                router.go('perfil');
+            } catch (err) { alert("Erro ao salvar."); }
+        };
 
         window.handlePhotoUpload = async (event) => {
             const file = event.target.files[0];
@@ -233,6 +239,85 @@
             };
             reader.readAsDataURL(file);
         };
+
+        window.confirmPresence = async (eventId, eventTitle) => {
+            if (!auth.currentUser) return;
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'events', eventId, 'presences', auth.currentUser.uid), {
+                    nome: profileData?.nome || 'Atleta',
+                    uid: auth.currentUser.uid,
+                    timestamp: new Date().getTime()
+                });
+                alert("Presença confirmada!");
+                router.go('agenda');
+            } catch (e) { alert("Erro ao confirmar."); }
+        };
+
+        function generateRadarPath(stats) {
+            const size = 100;
+            const center = size / 2;
+            const radius = 40;
+            const points = [];
+            const keys = ['vel', 'dri', 'pas', 'phy', 'def']; 
+            
+            keys.forEach((key, i) => {
+                const val = stats[key] || 50;
+                const angle = (Math.PI * 2 / keys.length) * i - Math.PI / 2;
+                const dist = (val / 100) * radius;
+                const x = center + Math.cos(angle) * dist;
+                const y = center + Math.sin(angle) * dist;
+                points.push(`${x},${y}`);
+            });
+            return points.join(' ');
+        }
+
+        window.downloadCard = async () => {
+            const btn = document.getElementById('download-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<span class="animate-spin material-symbols-outlined">sync</span> Processando...`;
+            btn.disabled = true;
+
+            const card = document.getElementById('elite-card-capture');
+            try {
+                const canvas = await html2canvas(card, {
+                    scale: 3,
+                    useCORS: true,
+                    backgroundColor: null,
+                    logging: false
+                });
+                const link = document.createElement('a');
+                link.download = `Cariominas_Card_${profileData.nome || 'Atleta'}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } catch (e) { alert("Erro ao gerar imagem."); } 
+            finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        };
+
+        function setupCardInteractions() {
+            const card = document.getElementById('elite-card-container');
+            const overlay = card?.querySelector('.holographic-overlay');
+            if (!card) return;
+
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = (y - centerY) / 10;
+                const rotateY = (centerX - x) / 10;
+
+                card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                if (overlay) overlay.style.backgroundPosition = `${(x / rect.width) * 100}% ${(y / rect.height) * 100}%`;
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = `rotateX(0deg) rotateY(0deg)`;
+            });
+        }
 
         const views = {
             login: async () => `
@@ -264,9 +349,7 @@
                                 <div id="photo-preview" class="size-32 rounded-full dark:bg-surface bg-white border-4 dark:border-white/5 border-black/5 flex items-center justify-center overflow-hidden shadow-2xl">
                                     <span class="material-symbols-outlined text-4xl opacity-20">add_a_photo</span>
                                 </div>
-                                <div class="absolute bottom-1 right-1 size-10 bg-primary rounded-full flex items-center justify-center border-4 dark:border-bg-dark border-bg-light shadow-lg">
-                                    <span class="material-symbols-outlined text-lg text-white">edit</span>
-                                </div>
+                                <div class="absolute bottom-1 right-1 size-10 bg-primary rounded-full flex items-center justify-center border-4 dark:border-bg-dark border-bg-light shadow-lg"><span class="material-symbols-outlined text-lg text-white">edit</span></div>
                                 <input type="file" id="profile-photo-input" class="hidden" accept="image/*">
                             </label>
                         </div>
@@ -296,6 +379,7 @@
             home: async () => {
                 const news = await getPublicData('news'); newsCache = news; 
                 const nextEvent = (await getPublicData('events'))[0];
+                const highlight = await getHighlight();
                 const profile = await getUserProfile();
                 const isDark = document.documentElement.classList.contains('dark');
 
@@ -318,6 +402,28 @@
                             <button class="size-11 rounded-full glass-panel flex items-center justify-center dark:text-white text-black active:scale-90 transition-all shadow-sm"><span class="material-symbols-outlined text-[20px]">notifications</span></button>
                         </div>
                     </header>
+
+                    ${highlight ? `
+                    <section class="relative p-6 rounded-[2.5rem] overflow-hidden dark:bg-surface bg-white border border-accent-gold/20 shadow-xl shadow-accent-gold/5 animate-in">
+                        <div class="absolute inset-0 bg-gradient-to-br from-accent-gold/5 via-transparent to-transparent"></div>
+                        <div class="flex items-center gap-6 relative z-10">
+                            <div class="relative">
+                                <div class="size-24 rounded-[2rem] bg-accent-gold/10 border-2 border-accent-gold overflow-hidden">
+                                    ${highlight.foto ? `<img src="${highlight.foto}" class="w-full h-full object-cover">` : `<span class="material-symbols-outlined text-4xl text-accent-gold absolute inset-0 flex items-center justify-center">person</span>`}
+                                </div>
+                                <div class="absolute -bottom-2 -right-2 size-10 bg-accent-gold rounded-full flex items-center justify-center border-4 dark:border-surface border-white shadow-lg"><span class="material-symbols-outlined text-white text-xl">star</span></div>
+                            </div>
+                            <div class="flex-1">
+                                <span class="text-[8px] font-black uppercase tracking-[0.3em] text-accent-gold">Destaque da Partida</span>
+                                <h2 class="text-xl font-black dark:text-white text-black leading-tight mt-1">${highlight.nome}</h2>
+                                <div class="flex gap-2 mt-2">
+                                    <span class="text-[9px] font-bold uppercase opacity-40">${highlight.posicao}</span>
+                                    <span class="text-[9px] font-bold uppercase opacity-40">• ${highlight.categoria}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    ` : ''}
 
                     <section class="relative p-6 rounded-[2.5rem] overflow-hidden glass-panel border border-black/5 dark:border-white/10 shadow-lg">
                         <div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent"></div>
@@ -342,47 +448,20 @@
                             <div class="size-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500"><span class="material-symbols-outlined text-[28px]">payments</span></div>
                             <span class="dark:text-white text-black text-[10px] font-black uppercase tracking-wider">Pagamentos</span>
                         </button>
-                        <button onclick="router.go('agenda')" class="flex flex-col items-center justify-center gap-3 rounded-[2rem] dark:bg-surface bg-white p-6 border border-black/5 dark:border-white/5 shadow-sm active:scale-95 transition-all">
-                            <div class="size-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400"><span class="material-symbols-outlined text-[28px]">calendar_month</span></div>
-                            <span class="dark:text-white text-black text-[10px] font-black uppercase tracking-wider">Agenda</span>
-                        </button>
-                        <button onclick="alert('Funcionalidade em breve!')" class="flex flex-col items-center justify-center gap-3 rounded-[2rem] dark:bg-surface bg-white p-6 border border-black/5 dark:border-white/5 shadow-sm active:scale-95 transition-all">
-                            <div class="size-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-400"><span class="material-symbols-outlined text-[28px]">chat</span></div>
-                            <span class="dark:text-white text-black text-[10px] font-black uppercase tracking-wider">Coach</span>
-                        </button>
                     </section>
 
                     <section class="space-y-4">
-                        <h3 class="text-sm font-black dark:text-white text-black px-1 italic uppercase tracking-widest opacity-40">
-                            Parceiros Oficiais
-                        </h3>
-
+                        <h3 class="text-sm font-black dark:text-white text-black px-1 italic uppercase tracking-widest opacity-40">Parceiros Oficiais</h3>
                         <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-
-                            <!-- Advantech -->
-                            <a href="https://www.advantech.com" target="_blank" rel="noopener noreferrer"
-                            class="min-w-[140px] h-20 p-1 rounded-[1.4rem] glass-panel border border-black/5 dark:border-white/5 flex items-center justify-center hover:scale-[1.03] transition">
-                                <img src="https://imgs.search.brave.com/jy3nYOT77n046_Hw0-liiCQSyP29dWnuK7VFHRm6L5Q/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly8xMDAw/bG9nb3MubmV0L3dw/LWNvbnRlbnQvdXBs/b2Fkcy8yMDIxLzA1/L0FkdmFudGVjaC1s/b2dvLTUwMHgyODEu/cG5n"
-                                    class="h-full w-full object-contain opacity-80"
-                                    alt="Advantech">
+                            <a href="https://www.advantech.com" target="_blank" rel="noopener noreferrer" class="min-w-[140px] h-20 p-1 rounded-[1.4rem] glass-panel border border-black/5 dark:border-white/5 flex items-center justify-center hover:scale-[1.03] transition">
+                                <img src="https://imgs.search.brave.com/jy3nYOT77n046_Hw0-liiCQSyP29dWnuK7VFHRm6L5Q/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly8xMDAw/bG9nb3MubmV0L3dw/LWNvbnRlbnQvdXBs/b2Fkcy8yMDIxLzA1/L0FkdmFudGVjaC1s/b2dvLTUwMHgyODEu/cG5n" class="h-full w-full object-contain opacity-80" alt="Advantech">
                             </a>
-
-                            <!-- Sun Shield -->
-                            <a href="https://sunshield.com.br" target="_blank" rel="noopener noreferrer"
-                            class="min-w-[140px] h-20 p-3 rounded-[1.4rem] glass-panel border border-black/5 dark:border-white/5 flex items-center justify-center hover:scale-[1.03] transition">
-                                <img src="https://sunshield.com.br/assets/images/logo.png"
-                                    class="h-full w-full object-contain opacity-80"
-                                    alt="Sun Shield">
+                            <a href="https://sunshield.com.br" target="_blank" rel="noopener noreferrer" class="min-w-[140px] h-20 p-3 rounded-[1.4rem] glass-panel border border-black/5 dark:border-white/5 flex items-center justify-center hover:scale-[1.03] transition">
+                                <img src="https://sunshield.com.br/assets/images/logo.png" class="h-full w-full object-contain opacity-80" alt="Sun Shield">
                             </a>
-
-                            <!-- Jordan Cell -->
-                            <a href="https://nadrjmv.github.io/jordancell" target="_blank" rel="noopener noreferrer"
-                            class="min-w-[140px] h-20 p-4 rounded-[1.4rem] glass-panel border border-black/5 dark:border-white/5 flex items-center justify-center hover:scale-[1.03] transition">
-                                <img src="https://i.postimg.cc/pdqmWSyK/sassa-removebg-preview-1.png"
-                                    class="h-full w-full object-contain opacity-80"
-                                    alt="Jordan Cell">
+                            <a href="https://nadrjmv.github.io/jordancell" target="_blank" rel="noopener noreferrer" class="min-w-[140px] h-20 p-4 rounded-[1.4rem] glass-panel border border-black/5 dark:border-white/5 flex items-center justify-center hover:scale-[1.03] transition">
+                                <img src="https://i.postimg.cc/pdqmWSyK/sassa-removebg-preview-1.png" class="h-full w-full object-contain opacity-80" alt="Jordan Cell">
                             </a>
-
                         </div>
                     </section>
 
@@ -391,9 +470,7 @@
                         <div class="space-y-4">
                             ${news.map(item => `
                                 <div onclick="openNews('${item.id}')" class="flex gap-4 p-4 rounded-[2rem] dark:bg-surface bg-white border border-black/5 dark:border-white/5 items-center shadow-sm active:scale-[0.98] transition-all cursor-pointer">
-                                    <div class="size-20 rounded-2xl bg-black/5 dark:bg-black/20 overflow-hidden shrink-0">
-                                        <img src="${item.capa || item.imageUrl}" class="w-full h-full object-cover">
-                                    </div>
+                                    <div class="size-20 rounded-2xl bg-black/5 dark:bg-black/20 overflow-hidden shrink-0"><img src="${item.capa || item.imageUrl}" class="w-full h-full object-cover"></div>
                                     <div class="flex flex-col gap-1 pr-2">
                                         <h4 class="text-sm font-black dark:text-white/90 text-black/90 leading-tight truncate">${item.titulo || item.title}</h4>
                                         <p class="text-[11px] dark:text-white/40 text-black/40 line-clamp-2 leading-relaxed font-medium">${item.resumo || 'Clique para ler mais.'}</p>
@@ -410,10 +487,7 @@
                 const events = await getPublicData('events');
                 return `
                 <div class="p-6 pt-12 space-y-8 animate-in pb-32 dark:text-white text-black">
-                    <header class="flex justify-between items-end">
-                        <h1 class="text-3xl font-black italic uppercase leading-none">Calendário</h1>
-                        <span class="text-primary text-[10px] font-black uppercase tracking-[0.2em]">Cariominas</span>
-                    </header>
+                    <header class="flex justify-between items-end"><h1 class="text-3xl font-black italic uppercase leading-none">Calendário</h1><span class="text-primary text-[10px] font-black uppercase tracking-[0.2em]">Cariominas</span></header>
                     <div class="relative space-y-6 before:absolute before:left-[30px] before:top-2 before:bottom-0 before:w-px dark:before:bg-white/5 before:bg-black/5">
                         ${events.map(ev => {
                             const isGame = ev.type?.toLowerCase() === 'jogo' || ev.titulo?.toLowerCase().includes('jogo');
@@ -437,7 +511,7 @@
                                         <div class="flex items-center gap-2"><span class="material-symbols-outlined text-sm ${colorClass}">location_on</span> ${ev.local}</div>
                                         <div class="flex items-center gap-2"><span class="material-symbols-outlined text-sm ${colorClass}">schedule</span> ${ev.hora}</div>
                                     </div>
-                                    <button class="w-full py-3.5 rounded-2xl bg-black/5 dark:bg-white/5 text-[10px] font-black uppercase tracking-widest opacity-60">Confirmar Presença</button>
+                                    <button onclick="confirmPresence('${ev.id}', '${ev.titulo}')" class="w-full py-3.5 rounded-2xl bg-primary text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all">Confirmar Presença</button>
                                 </div>
                             </div>`}).join('')}
                     </div>
@@ -446,55 +520,88 @@
             
             card: async () => {
                 const p = await getUserProfile();
+                const radarPath = generateRadarPath(p);
+                
+                // Melhoria na exibição do nome (Primeiro + Último)
+                const nameParts = p.nome ? p.nome.trim().split(/\s+/) : ['PLAYER'];
+                const firstName = nameParts[0];
+                const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+
                 return `
                 <div class="min-h-screen flex flex-col items-center justify-center p-6 pt-12 animate-in pb-32">
                     <div class="flex items-center w-full justify-between mb-8">
-                        <button onclick="router.go('home')" class="size-10 rounded-full glass-panel flex items-center justify-center dark:text-white text-black active:scale-90 transition-transform shadow-sm"><span class="material-symbols-outlined">arrow_back</span></button>
+                        <button onclick="router.go('home')" class="size-10 rounded-full glass-panel flex items-center justify-center dark:text-white text-black shadow-sm"><span class="material-symbols-outlined">arrow_back</span></button>
                         <h2 class="text-xs font-black tracking-widest dark:text-white text-black uppercase italic">Elite Card</h2>
-                        <button class="size-10 rounded-full glass-panel flex items-center justify-center dark:text-white text-black active:scale-90 transition-transform shadow-sm"><span class="material-symbols-outlined">share</span></button>
+                        <button class="size-10 rounded-full glass-panel flex items-center justify-center dark:text-white text-black shadow-sm"><span class="material-symbols-outlined">info</span></button>
                     </div>
-                    <div class="relative w-full aspect-[2/3] max-w-[320px] bg-bg-dark rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.6)] overflow-hidden border border-white/5">
-                        <div class="absolute inset-0 bg-card-gradient"></div>
-                        <div class="absolute inset-0 bg-card-shine pointer-events-none z-20"></div>
-                        <div class="relative h-full flex flex-col z-10 p-7">
-                            <div class="flex justify-between items-start">
-                                <div class="flex flex-col items-center">
-                                    <span class="text-6xl font-black text-accent-gold tracking-tighter drop-shadow-2xl leading-none">${p.overall || '80'}</span>
-                                    <span class="text-sm font-black text-white uppercase tracking-widest mt-2">${p.posicao || 'ATA'}</span>
-                                    <div class="w-8 h-px bg-white/20 my-4"></div>
-                                    <div class="flex flex-col items-center gap-1.5">
-                                        <div class="w-7 h-4.5 bg-yellow-400 rounded-[2px] relative overflow-hidden shadow-sm border border-white/10">
-                                            <div class="absolute inset-0 flex items-center justify-center"><div class="w-full h-2.5 bg-green-600"></div></div>
-                                            <div class="absolute inset-0 flex items-center justify-center"><div class="size-1.5 bg-blue-700 rounded-full"></div></div>
+
+                    <div id="elite-card-container" class="relative w-full aspect-[2/3] max-w-[320px] transform-gpu">
+                        <div id="elite-card-capture" class="relative h-full w-full bg-bg-dark rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.6)] overflow-hidden border border-white/5">
+                            <div class="absolute inset-0 bg-card-gradient"></div>
+                            <div class="holographic-overlay"></div>
+                            <div class="absolute inset-0 bg-card-shine pointer-events-none z-20"></div>
+
+                            <div class="relative h-full flex flex-col z-10 p-7">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex flex-col items-center">
+                                        <span class="text-6xl font-black text-accent-gold tracking-tighter drop-shadow-2xl leading-none">${p.overall || '80'}</span>
+                                        <span class="text-sm font-black text-white uppercase tracking-widest mt-2">${p.posicao || 'ATA'}</span>
+                                        <div class="w-8 h-px bg-white/20 my-4"></div>
+                                        <div class="flex flex-col items-center gap-1.5">
+                                            <div class="w-7 h-4.5 bg-yellow-400 rounded-[2px] relative overflow-hidden shadow-sm border border-white/10">
+                                                <div class="absolute inset-0 flex items-center justify-center"><div class="w-full h-2.5 bg-green-600"></div></div>
+                                                <div class="absolute inset-0 flex items-center justify-center"><div class="size-1.5 bg-blue-700 rounded-full"></div></div>
+                                            </div>
+                                            <span class="text-[9px] font-black text-white/50 tracking-widest leading-none">BRA</span>
                                         </div>
-                                        <span class="text-[9px] font-black text-white/50 tracking-widest leading-none">BRA</span>
+                                    </div>
+                                    <div class="w-14 h-14 glass-panel rounded-full flex items-center justify-center border border-white/10 shadow-inner overflow-hidden p-3 bg-white/5"><img src="${clubLogoUrl}" class="w-full h-full object-contain"></div>
+                                </div>
+
+                                <div class="flex-1 relative -mx-7 mt-2 mb-2 flex items-end justify-center overflow-hidden">
+                                    <div class="absolute bottom-10 size-48 bg-primary/20 blur-[60px] rounded-full"></div>
+                                    ${p.foto ? `<img src="${p.foto}" class="relative w-full h-[110%] object-contain object-bottom z-10" style="mask-image: linear-gradient(to bottom, black 80%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);">` : `<div class="opacity-10 mb-12 text-white"><span class="material-symbols-outlined text-[140px]">person</span></div>`}
+                                </div>
+
+                                <div class="flex flex-col items-center">
+                                    <h1 class="text-3xl font-black text-white uppercase tracking-tight text-center leading-none mb-1">
+                                        ${firstName} <span class="text-accent-gold">${lastName}</span>
+                                    </h1>
+                                    <div class="flex items-center gap-3 text-[9px] font-black text-white/40 uppercase tracking-[0.2em] mb-4"><span>${p.categoria || 'ELITE'}</span><div class="size-1 bg-accent-gold rounded-full"></div><span>${p.pe || 'DESTRO'}</span><div class="size-1 bg-accent-gold rounded-full"></div><span>${p.altura || '1.75'}M</span></div>
+                                    
+                                    <div class="w-full flex items-center gap-4 mb-4">
+                                        <div class="flex-1 grid grid-cols-2 gap-x-4 gap-y-2">
+                                            <div class="flex justify-between border-b border-white/10 pb-0.5"><span class="text-[9px] text-white/40 font-bold">VEL</span><span class="text-[10px] text-white font-black">${p.vel || 75}</span></div>
+                                            <div class="flex justify-between border-b border-white/10 pb-0.5"><span class="text-[9px] text-white/40 font-bold">DRI</span><span class="text-[10px] text-white font-black">${p.dri || 75}</span></div>
+                                            <div class="flex justify-between border-b border-white/10 pb-0.5"><span class="text-[9px] text-white/40 font-bold">PAS</span><span class="text-[10px] text-white font-black">${p.pas || 75}</span></div>
+                                            <div class="flex justify-between border-b border-white/10 pb-0.5"><span class="text-[9px] text-white/40 font-bold">DEF</span><span class="text-[10px] text-white font-black">${p.def || 50}</span></div>
+                                            <div class="flex justify-between border-b border-white/10 pb-0.5"><span class="text-[9px] text-white/40 font-bold">PHY</span><span class="text-[10px] text-white font-black">${p.phy || 60}</span></div>
+                                        </div>
+                                        
+                                        <div class="size-16 relative">
+                                            <svg viewBox="0 0 100 100" class="w-full h-full opacity-60">
+                                                <polygon points="50,10 88,38 73,82 27,82 12,38" fill="none" stroke="white" stroke-width="0.5"/>
+                                                <polygon points="${radarPath}" fill="#ec131e" fill-opacity="0.6" stroke="#ec131e" stroke-width="1.5"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    <div class="w-full bg-white rounded-2xl p-2.5 flex items-center justify-between shadow-2xl">
+                                        <div class="flex flex-col gap-0.5 pl-2">
+                                            <div class="flex items-center gap-1.5"><div class="size-1.5 rounded-full bg-accent-green animate-pulse"></div><span class="text-accent-green text-[9px] font-black uppercase">Membro Oficial</span></div>
+                                            <span class="text-neutral-400 text-[8px] uppercase font-bold">Temporada 2026</span>
+                                        </div>
+                                        <div class="bg-neutral-100 p-1 rounded-lg"><div class="size-7 bg-neutral-900 overflow-hidden relative"><svg class="w-full h-full fill-white p-0.5" viewBox="0 0 100 100"><path d="M10 10h30v30h-30zM50 10h10v10h-10zM70 10h20v20h-20zM10 50h20v20h-20zM50 40h40v40h-40z"></path></svg></div></div>
                                     </div>
                                 </div>
-                                <div class="w-14 h-14 glass-panel rounded-full flex items-center justify-center border border-white/10 shadow-inner overflow-hidden p-3 bg-white/5">
-                                     <img src="${clubLogoUrl}" class="w-full h-full object-contain">
-                                </div>
                             </div>
-                            <div class="flex-1 relative -mx-7 mt-2 mb-2 flex items-end justify-center overflow-hidden">
-                                <div class="absolute bottom-10 size-48 bg-primary/20 blur-[60px] rounded-full"></div>
-                                ${p.foto ? `<img src="${p.foto}" class="relative w-full h-[110%] object-contain object-bottom z-10" style="mask-image: linear-gradient(to bottom, black 80%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);">` : `<div class="opacity-10 mb-12 text-white"><span class="material-symbols-outlined text-[140px]">person</span></div>`}
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <h1 class="text-3xl font-black text-white uppercase tracking-tight text-center leading-none mb-1">${p.nome ? p.nome.split(' ')[0] : 'PLAYER'} <span class="text-accent-gold">${p.nome && p.nome.split(' ')[1] ? p.nome.split(' ')[1] : ''}</span></h1>
-                                <div class="flex items-center gap-3 text-[9px] font-black text-white/40 uppercase tracking-[0.2em] mb-4"><span>${p.categoria || 'ELITE'}</span><div class="size-1 bg-accent-gold rounded-full"></div><span>${p.pe || 'DESTRO'}</span><div class="size-1 bg-accent-gold rounded-full"></div><span>${p.altura || '1.75'}M</span></div>
-                                <div class="w-full grid grid-cols-3 gap-2 px-1 mb-5">
-                                    <div class="flex flex-col items-center bg-white/[0.05] rounded-xl py-2 border border-white/5"><span class="text-[8px] text-white/30 font-black uppercase leading-none mb-1">VEL</span><span class="text-lg font-black text-white leading-none">${p.vel || '75'}</span></div>
-                                    <div class="flex flex-col items-center bg-white/[0.05] rounded-xl py-2 border border-white/5"><span class="text-[8px] text-white/30 font-black uppercase leading-none mb-1">DRI</span><span class="text-lg font-black text-white leading-none">${p.dri || '75'}</span></div>
-                                    <div class="flex flex-col items-center bg-white/[0.05] rounded-xl py-2 border border-white/5"><span class="text-[8px] text-white/30 font-black uppercase leading-none mb-1">PAS</span><span class="text-lg font-black text-white leading-none">${p.pas || '75'}</span></div>
-                                </div>
-                                <div class="w-full bg-white rounded-2xl p-2.5 flex items-center justify-between shadow-2xl">
-                                    <div class="flex flex-col gap-0.5 pl-2"><div class="flex items-center gap-1.5"><div class="size-1.5 rounded-full bg-accent-green animate-pulse"></div><span class="text-accent-green text-[9px] font-black uppercase">Membro Ativo</span></div><span class="text-neutral-400 text-[8px] uppercase font-bold">ID: ${auth.currentUser?.uid.substring(0,8).toUpperCase()}</span></div>
-                                    <div class="bg-neutral-100 p-1 rounded-lg"><div class="size-7 bg-neutral-900 overflow-hidden relative"><svg class="w-full h-full fill-white p-0.5" viewBox="0 0 100 100"><path d="M10 10h30v30h-30zM50 10h10v10h-10zM70 10h20v20h-20zM10 50h20v20h-20zM50 40h40v40h-40z"></path></svg></div></div>
-                                </div>
-                            </div>
+                            <div class="absolute inset-0 metallic-sheen pointer-events-none rounded-[2.5rem] z-30 mix-blend-overlay"></div>
                         </div>
-                        <div class="absolute inset-0 metallic-sheen pointer-events-none rounded-[2.5rem] z-30 mix-blend-overlay"></div>
                     </div>
-                    <button class="mt-8 flex items-center gap-3 bg-primary text-white px-10 py-4.5 rounded-full font-black uppercase tracking-widest text-[10px] shadow-xl shadow-primary/20 transition-all active:scale-95"><span class="material-symbols-outlined text-sm">ios_share</span> Salvar na Galeria</button>
+
+                    <button id="download-btn" onclick="downloadCard()" class="mt-8 flex items-center gap-3 bg-primary text-white px-10 py-4.5 rounded-full font-black uppercase tracking-widest text-[10px] shadow-xl shadow-primary/20 transition-all active:scale-95">
+                        <span class="material-symbols-outlined text-sm">download</span> Salvar na Galeria
+                    </button>
                 </div>`;
             },
 
@@ -525,13 +632,34 @@
                             </div>
                             <label class="absolute bottom-1 right-1 bg-primary text-white size-10 flex items-center justify-center rounded-full border-4 dark:border-bg-dark border-bg-light cursor-pointer active:scale-90 transition-transform shadow-lg"><span class="material-symbols-outlined text-sm">photo_camera</span><input type="file" class="hidden" accept="image/*" onchange="handlePhotoUpload(event)"></label>
                         </div>
-                        <div class="mt-6">
-                            <h2 class="text-3xl font-black dark:text-white text-black leading-none">${profile.nome || 'Jogador'}</h2>
+                        <div class="mt-6 flex flex-col items-center">
+                            <div class="flex items-center gap-3">
+                                <h2 class="text-3xl font-black dark:text-white text-black leading-none">${profile.nome || 'Jogador'}</h2>
+                                <button onclick="openEditName()" class="size-8 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center text-primary active:scale-90 transition-transform"><span class="material-symbols-outlined text-[18px]">edit_note</span></button>
+                            </div>
                             <p class="text-primary text-[10px] font-black uppercase tracking-[0.3em] mt-3 bg-primary/10 inline-block px-4 py-1.5 rounded-full border border-primary/20">${profile.categoria || 'ELITE'}</p>
                         </div>
-                        <div class="grid grid-cols-2 gap-4 mt-10">${[{l:'Posição', v:profile.posicao, i:'sports_soccer', c:'text-blue-400'}, {l:'Pé', v:profile.pe, i:'footprint', c:'text-accent-gold'}, {l:'Altura', v:profile.altura+'m', i:'straighten', c:'text-emerald-400'}, {l:'Peso', v:profile.peso+'kg', i:'monitor_weight', c:'text-purple-400'}].map(item => `
-                            <div class="dark:bg-surface bg-white p-5 rounded-[2.2rem] border dark:border-white/5 border-black/5 glass-panel shadow-sm text-left"><div class="flex items-center gap-3 mb-2"><div class="size-8 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center ${item.c}"><span class="material-symbols-outlined text-sm">${item.i}</span></div><p class="text-[9px] opacity-30 uppercase font-black tracking-widest">${item.l}</p></div><p class="font-black dark:text-white text-black text-lg">${item.v || '-'}</p></div>`).join('')}</div>
-                        <div class="mt-8 p-6 rounded-[2.2rem] glass-panel border dark:border-white/5 border-black/5 flex flex-col items-center gap-2"><p class="text-[8px] opacity-30 uppercase font-black tracking-[0.3em]">Cariominas ID</p><code class="text-[10px] text-primary break-all font-mono select-all text-center">${auth.currentUser?.uid}</code></div>
+                        <div class="grid grid-cols-2 gap-4 mt-10">
+                            ${[{l:'Posição', v:profile.posicao, i:'sports_soccer', c:'text-blue-400'}, {l:'Pé', v:profile.pe, i:'footprint', c:'text-accent-gold'}, {l:'Altura', v:profile.altura+'m', i:'straighten', c:'text-emerald-400'}, {l:'Peso', v:profile.peso+'kg', i:'monitor_weight', c:'text-purple-400'}].map(item => `
+                            <div class="dark:bg-surface bg-white p-5 rounded-[2.2rem] border dark:border-white/5 border-black/5 glass-panel shadow-sm text-left">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <div class="size-8 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center ${item.c}"><span class="material-symbols-outlined text-sm">${item.i}</span></div>
+                                    <p class="text-[9px] opacity-30 uppercase font-black tracking-widest">${item.l}</p>
+                                </div>
+                                <p class="font-black dark:text-white text-black text-lg">${item.v || '-'}</p>
+                            </div>`).join('')}
+                        </div>
+                        
+                        <div class="mt-8 p-6 rounded-[2.2rem] glass-panel border dark:border-white/5 border-black/5 flex justify-between items-center text-left">
+                            <div>
+                                <p class="text-[8px] opacity-30 uppercase font-black tracking-[0.3em] mb-1">Status de Vínculo</p>
+                                <p class="text-sm font-black text-accent-green flex items-center gap-2"><span class="size-1.5 rounded-full bg-accent-green animate-pulse"></span> Atleta Federado</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[8px] opacity-30 uppercase font-black tracking-[0.3em] mb-1">Validade</p>
+                                <p class="text-[10px] font-black dark:text-white text-black">Temporada 2026</p>
+                            </div>
+                        </div>
                     </section>
                 </div>`;
             }
@@ -562,11 +690,19 @@
             } catch (e) { return []; }
         }
 
+        async function getHighlight() {
+            try {
+                const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'highlight', 'current'));
+                return snap.exists() ? snap.data() : null;
+            } catch (e) { return null; }
+        }
+
         function setupLoginEvents() {
             const form = document.getElementById('login-form');
             if (form) form.onsubmit = async (e) => {
                 e.preventDefault();
-                try { await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value); } catch (err) { alert("Acesso negado."); }
+                try { await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value); } 
+                catch (err) { alert("Acesso negado."); }
             };
         }
 
@@ -586,7 +722,7 @@
                     nome: document.getElementById('setup-name').value, posicao: document.getElementById('setup-pos').value,
                     pe: document.getElementById('setup-foot').value, altura: document.getElementById('setup-height').value,
                     peso: document.getElementById('setup-weight').value, categoria: document.getElementById('setup-cat').value,
-                    foto: base64Temp, overall: 80, vel: 75, pas: 75, dri: 75
+                    foto: base64Temp, overall: 80, vel: 75, pas: 75, dri: 75, def: 50, phy: 60
                 };
                 try {
                     await setDoc(doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'settings', 'profile'), data);
@@ -613,6 +749,9 @@
         window.onload = bootstrap;
         window.signOut = signOut;
         window.auth = auth;
+        window.saveNewName = saveNewName;
+        window.closeEditName = closeEditName;
+        window.openEditName = openEditName;
     </script>
 </body>
 </html>
